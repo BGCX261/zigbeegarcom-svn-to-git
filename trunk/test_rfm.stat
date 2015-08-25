@@ -1,0 +1,28 @@
+// SourceBoost Linker Function Resource Usage Dump
+
+#GLOBAL:"global",line = 0,ram = 45.0,rom = 0;
+__div_32_32(unsigned long,unsigned long):"E:\Prg\SourceBoost\compiler\picantc\libc\div.c",line = 44,ram = 17.0,rom = 59;
+__div_16_16(unsigned short,unsigned short):"E:\Prg\SourceBoost\compiler\picantc\libc\div.c",line = 116,ram = 9.0,rom = 33;
+init(void):"F:\RFM12\test_rfm.c",line = 285,ram = 0.0,rom = 25;
+interrupt(void):"F:\RFM12\test_rfm.c",line = 64,ram = 0.0,rom = 18;
+main(void):"F:\RFM12\test_rfm.c",line = 74,ram = 38.0,rom = 202;
+Init(void):"F:\lib\rfm12.c",line = 59,ram = 0.0,rom = 22;
+WriteCMD(unsigned short):"F:\lib\rfm12.c",line = 268,ram = 8.0,rom = 41;
+rfm12_Basic_Config(void):"F:\lib\rfm12.c",line = 133,ram = 0.0,rom = 34;
+goto_quiettime_state(void):"F:\lib\rfm12.c",line = 663,ram = 0.0,rom = 10;
+rfm12_Init_915(void):"F:\lib\rfm12.c",line = 86,ram = 0.0,rom = 9;
+rfm12_SetBaud(unsigned short):"F:\lib\rfm12.c",line = 192,ram = 4.0,rom = 68;
+rfm12_SetFreq(unsigned short):"F:\lib\rfm12.c",line = 230,ram = 2.0,rom = 31;
+rfm12_EnableTx(void):"F:\lib\rfm12.c",line = 329,ram = 0.0,rom = 2;
+goto_transmitting_state(void):"F:\lib\rfm12.c",line = 619,ram = 0.0,rom = 10;
+rfm12_EnableRx(void):"F:\lib\rfm12.c",line = 339,ram = 0.0,rom = 2;
+goto_receiving_state(void):"F:\lib\rfm12.c",line = 642,ram = 0.0,rom = 10;
+rfm12_DisableTx(void):"F:\lib\rfm12.c",line = 334,ram = 0.0,rom = 2;
+rfm12_DisableRx(void):"F:\lib\rfm12.c",line = 344,ram = 0.0,rom = 2;
+rfm12_WaitReady(void):"F:\lib\rfm12.c",line = 445,ram = 0.1,rom = 13;
+rfm12_Tx_Byte(unsigned char):"F:\lib\rfm12.c",line = 602,ram = 1.0,rom = 8;
+rfm12_ReadFifo(void):"F:\lib\rfm12.c",line = 514,ram = 1.0,rom = 8;
+rfm12_ResetFifo(void):"F:\lib\rfm12.c",line = 580,ram = 0.0,rom = 11;
+delay_ms(unsigned char):"NoSourceFile",line = 0,ram = 0.0,rom = 20;
+_startup(void):"NoSourceFile",line = 0,ram = 0.0,rom = 7;
+#HEAP_BLOCK: 0, 169, 71;

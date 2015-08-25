@@ -1,0 +1,117 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 6.95
+;// License Type  : Lite License (Unregistered)
+;// Limitations   : PIC12,PIC16 max code size:2048 words, max RAM banks:2, Non commercial use only
+;/////////////////////////////////////////////////////////////////////////////////
+
+
+Map File
+
+Program Memory usage
+====================
+
+Address  Length   Unique Name      Name
+-------  ------   -----------      ----
+00000000:00000004 _resetvector     _resetvector 
+00000004:0000000C _interruptVector _interruptVector 
+00000010:00000014 delay_ms_00000   delay_ms(unsigned char) 
+00000024:00000029 WriteCMD_00000   WriteCMD(unsigned short) 
+0000004D:00000022 rfm12_Basi_00028 rfm12_Basic_Config(void) 
+0000006F:0000000A goto_quiet_00029 goto_quiettime_state(void) 
+00000079:0000003B __div_32_3_00001 __div_32_32(unsigned long,unsigned long) 
+000000B4:00000021 __div_16_1_00003 __div_16_16(unsigned short,unsigned short) 
+000000D5:00000016 Init_00000       Init(void) 
+000000EB:0000000D rfm12_Wait_0001C rfm12_WaitReady(void) 
+000000F8:0000001F rfm12_SetF_00015 rfm12_SetFreq(unsigned short) 
+00000117:00000044 rfm12_SetB_00013 rfm12_SetBaud(unsigned short) 
+0000015B:00000009 rfm12_Init_00012 rfm12_Init_915(void) 
+00000164:0000000A goto_trans_0002A goto_transmitting_state(void) 
+0000016E:0000000A goto_recei_0002B goto_receiving_state(void) 
+00000178:00000008 rfm12_Tx_B_00020 rfm12_Tx_Byte(unsigned char) 
+00000180:0000000B rfm12_Rese_00023 rfm12_ResetFifo(void) 
+0000018B:00000008 rfm12_Read_00024 rfm12_ReadFifo(void) 
+00000193:00000002 rfm12_Enab_00018 rfm12_EnableRx(void) 
+00000195:00000002 rfm12_Enab_00017 rfm12_EnableTx(void) 
+00000197:00000002 rfm12_Disa_0001A rfm12_DisableRx(void) 
+00000199:00000002 rfm12_Disa_00019 rfm12_DisableTx(void) 
+0000019B:00000019 init_00000       init(void) 
+000001B4:000000CA main             main(void) 
+0000027E:00000007 _startup_00000   _startup(void) 
+00000285:00000012 interrupt        interrupt(void) 
+00000297:00000569 Unused Block
+
+Register usage
+==============
+
+Address  Bit Lengh Bit Mask   Unique Name                      Name
+-------  --------- --------   -----------                      ----
+00000000:00000008             gbl_indf                         indf
+00000001:00000008             gbl_tmr0                         tmr0
+00000002:00000008             gbl_pcl                          pcl
+00000003:00000008             gbl_status                       status
+00000004:00000008             gbl_fsr                          fsr
+00000005:00000001  0b00000010 gbl_SDI                          SDI
+00000006:00000001  0b00000010 gbl_SDO                          SDO
+0000000A:00000008             gbl_pclath                       pclath
+0000000B:00000008             gbl_intcon                       intcon
+0000000C:00000008             gbl_pir1                         pir1
+0000000E:00000008             gbl_tmr1l                        tmr1l
+0000000F:00000008             gbl_tmr1h                        tmr1h
+00000010:00000008             gbl_t1con                        t1con
+00000011:00000008             gbl_tmr2                         tmr2
+00000012:00000008             gbl_t2con                        t2con
+00000015:00000008             gbl_ccpr1l                       ccpr1l
+00000016:00000008             gbl_ccpr1h                       ccpr1h
+00000017:00000008             gbl_ccp1con                      ccp1con
+00000018:00000008             gbl_rcsta                        rcsta
+00000019:00000008             gbl_txreg                        txreg
+0000001A:00000008             gbl_rcreg                        rcreg
+0000001F:00000008             gbl_cmcon                        cmcon
+00000020:00000130             gbl_rfm12_conf                   rfm12_conf
+00000046:00000018             Int1BContext                     Int1BContext
+00000049:00000008             gbl_mode                         mode
+0000004A:00000008             gbl_rx_state                     rx_state
+0000004B:00000008             gbl_flag                         flag
+0000004C:00000100             main_1_buffer                    buffer
+0000006C:00000008             main_1_i                         i
+0000006D:00000008             main_1_j                         j
+0000006E:00000008             main_1_chksum                    chksum
+0000006F:00000008             main_1_temp                      temp
+00000070:00000008             main_1_datavari                  datavari
+00000071:00000008             delay_ms_00000_arg_del           del
+00000072:00000001  0b00000001 rfm12_Wait_0001C_1_READY         READY
+00000073:00000010             __div_16_1_00003_arg_a           a
+00000075:00000010             __div_16_1_00003_arg_b           b
+00000077:00000020             __div_32_3_00001_arg_b           b
+00000079:00000008             CompTempVar618                  
+0000007A:00000008             CompTempVar619                  
+0000007B:00000010             WriteCMD_00000_arg_CMD           CMD
+0000007D:00000008             CompTempVar626                  
+0000007E:00000008             CompTempVar627                  
+0000007F:00000008             Int1Context                      Int1Context
+00000081:00000008             gbl_option_reg                   option_reg
+00000085:00000001  0b00000010 gbl_SDI_TRIS                     SDI_TRIS
+00000086:00000001  0b00000010 gbl_SDO_TRIS                     SDO_TRIS
+0000008C:00000008             gbl_pie1                         pie1
+0000008E:00000008             gbl_pcon                         pcon
+00000092:00000008             gbl_pr2                          pr2
+00000098:00000008             gbl_txsta                        txsta
+00000099:00000008             gbl_spbrg                        spbrg
+0000009A:00000008             gbl_eedata                       eedata
+0000009B:00000008             gbl_eeadr                        eeadr
+0000009C:00000008             gbl_eecon1                       eecon1
+0000009D:00000008             gbl_eecon2                       eecon2
+0000009F:00000008             gbl_vrcon                        vrcon
+000000A0:00000008             WriteCMD_00000_1_n               n
+000000A1:00000008             CompTempVar615                  
+000000A2:00000010             CompTempVarRet614                $ret
+000000A4:00000008             __div_32_3_00001_1_i             i
+000000A5:00000020             CompTempVarRet163                $ret
+
+
+Memory Usage Report
+===================
+RAM available:224 bytes, used:105 bytes (46.9%), free:119 bytes (53.1%), 
+Heap size:71 bytes, Heap max single alloc:70 bytes
+ROM available:2048 words, used:663 words (32.4%), free:1385 words (67.6%)

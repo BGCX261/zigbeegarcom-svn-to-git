@@ -1,0 +1,85 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 6.95
+;// License Type  : Lite License (Unregistered)
+;// Limitations   : PIC12,PIC16 max code size:2048 words, max RAM banks:2, Non commercial use only
+;/////////////////////////////////////////////////////////////////////////////////
+
+
+Map File
+
+Program Memory usage
+====================
+
+Address  Length   Unique Name      Name
+-------  ------   -----------      ----
+00000000:00000004 _resetvector     _resetvector 
+00000004:00000014 delay_ms_00000   delay_ms(unsigned char) 
+00000018:00000017 Write1_00000     Write1(void) 
+0000002F:00000017 Write0_00000     Write0(void) 
+00000046:00000021 WriteCMD_00000   WriteCMD(unsigned short) 
+00000067:00000012 WaitReady_00000  WaitReady(void) 
+00000079:00000053 init_00000       init(void) 
+000000CC:00000008 ReadFifo_00000   ReadFifo(void) 
+000000D4:0000008E main             main(void) 
+00000162:00000007 _startup_00000   _startup(void) 
+00000169:00000697 Unused Block
+
+Register usage
+==============
+
+Address  Bit Lengh Bit Mask   Unique Name                      Name
+-------  --------- --------   -----------                      ----
+00000000:00000008             gbl_indf                         indf
+00000001:00000008             gbl_tmr0                         tmr0
+00000002:00000008             gbl_pcl                          pcl
+00000003:00000008             gbl_status                       status
+00000004:00000008             gbl_fsr                          fsr
+00000005:00000001  0b00000010 gbl_SDI                          SDI
+00000006:00000001  0b00000010 gbl_SDO                          SDO
+0000000A:00000008             gbl_pclath                       pclath
+0000000B:00000008             gbl_intcon                       intcon
+0000000C:00000008             gbl_pir1                         pir1
+0000000E:00000008             gbl_tmr1l                        tmr1l
+0000000F:00000008             gbl_tmr1h                        tmr1h
+00000010:00000008             gbl_t1con                        t1con
+00000011:00000008             gbl_tmr2                         tmr2
+00000012:00000008             gbl_t2con                        t2con
+00000015:00000008             gbl_ccpr1l                       ccpr1l
+00000016:00000008             gbl_ccpr1h                       ccpr1h
+00000017:00000008             gbl_ccp1con                      ccp1con
+00000018:00000008             gbl_rcsta                        rcsta
+00000019:00000008             gbl_txreg                        txreg
+0000001A:00000008             gbl_rcreg                        rcreg
+0000001F:00000008             gbl_cmcon                        cmcon
+00000020:00000010             gbl_t                            t
+00000022:00000008             main_1_i                         i
+00000023:00000008             main_1_j                         j
+00000024:00000010             main_1_chksum                    chksum
+00000026:00000088             main_1_buffer                    buffer
+00000037:00000008             main_1_temp                      temp
+00000038:00000008             delay_ms_00000_arg_del           del
+0000003A:00000010             WriteCMD_00000_1_RESULT          RESULT
+0000003C:00000001  0b00000001 WaitReady_00000_1_READY          READY
+0000003D:00000008             CompTempVar580                  
+0000003E:00000010             CompTempVarRet579                $ret
+00000081:00000008             gbl_option_reg                   option_reg
+00000085:00000001  0b00000010 gbl_SDI_TRIS                     SDI_TRIS
+00000086:00000001  0b00000010 gbl_SDO_TRIS                     SDO_TRIS
+0000008C:00000008             gbl_pie1                         pie1
+0000008E:00000008             gbl_pcon                         pcon
+00000092:00000008             gbl_pr2                          pr2
+00000098:00000008             gbl_txsta                        txsta
+00000099:00000008             gbl_spbrg                        spbrg
+0000009A:00000008             gbl_eedata                       eedata
+0000009B:00000008             gbl_eeadr                        eeadr
+0000009C:00000008             gbl_eecon1                       eecon1
+0000009D:00000008             gbl_eecon2                       eecon2
+0000009F:00000008             gbl_vrcon                        vrcon
+
+
+Memory Usage Report
+===================
+RAM available:224 bytes, used:32 bytes (14.3%), free:192 bytes (85.7%), 
+Heap size:144 bytes, Heap max single alloc:95 bytes
+ROM available:2048 words, used:361 words (17.7%), free:1687 words (82.3%)

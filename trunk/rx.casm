@@ -1,0 +1,857 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 6.95
+;// License Type  : Lite License (Unregistered)
+;// Limitations   : PIC12,PIC16 max code size:2048 words, max RAM banks:2, Non commercial use only
+;/////////////////////////////////////////////////////////////////////////////////
+
+#include <system.h>
+#include "common.h"
+
+#pragma CLOCK_FREQ 8000000
+
+#pragma DATA _CONFIG, _WDT_OFF & _PWRTE_ON & _INTOSC_OSC_NOCLKOUT & _MCLRE_OFF & _BODEN_OFF & _LVP_OFF
+
+// Required Ports
+#define RFM12_nIRQ_PORT		PORTB
+#define RFM12_CS_PORT		PORTA
+#define SCK_PORT			PORTA
+#define SDO_PORT			PORTB
+#define	SDI_PORT			PORTA
+
+// TRIS Register
+#define RFM12_nIRQ_TRISP	TRISB
+#define RFM12_CS_TRISP		TRISA
+#define SCK_TRISP			TRISA
+#define SDO_TRISP			TRISB
+#define	SDI_TRISP			TRISA
+
+// Define pins
+#define RFM12_nIRQ_PIN		0
+#define RFM12_CS_PIN		2
+#define	SCK_PIN				3
+#define	SDO_PIN				1
+#define	SDI_PIN				1
+
+////////////////////////////////////////////////////////////
+// DO NOT CHANGE BELOW THIS LINE
+////////////////////////////////////////////////////////////
+volatile bit RFM12_IRQ      @ RFM12_nIRQ_PORT   . RFM12_nIRQ_PIN;
+volatile bit RFM12_CS		@ RFM12_CS_PORT     . RFM12_CS_PIN;
+volatile bit SCK			@ SCK_PORT     		. SCK_PIN;
+volatile bit SDO			@ SDO_PORT		    . SDO_PIN;
+volatile bit SDI			@ SDI_PORT     		. SDI_PIN;
+
+bit RFM12_nIRQ_TRIS @ RFM12_nIRQ_TRISP . RFM12_nIRQ_PIN;
+bit RFM12_CS_TRIS @ RFM12_CS_TRISP . RFM12_CS_PIN;
+bit SCK_TRIS @ SCK_TRISP . SCK_PIN;
+bit SDO_TRIS @ SDO_TRISP . SDO_PIN;
+bit SDI_TRIS @ SDI_TRISP . SDI_PIN;
+
+//outputs
+#define RFM12_CS_OUT()	RFM12_CS_TRIS=0
+#define SCK_OUT()		SCK_TRIS=0
+#define SDO_OUT()		SDO_TRIS=0	
+
+// inputs
+#define RFM12_nIRQ_IN()	RFM12_nIRQ_TRIS=1
+#define SDI_IN()		SDI_TRIS=1
+
+#define HI_SCK()  SCK=1
+#define LOW_SCK() SCK=0
+#define HI_SDO()  SDO=1
+#define LOW_SDO() SDO=0
+#define HI_SEL()  RFM12_CS=1
+#define LOW_SEL() RFM12_CS=0
+
+// prototypes
+void init(void);
+uint WriteCMD(uint);
+void rf_SendByte(uchar);
+void WaitReady(void);
+uchar ReadFifo();
+int t=0;
+0162  1283  	BCF STATUS, RP0
+0163  1303  	BCF STATUS, RP1
+0164  01A0  	CLRF gbl_t
+0165  01A1  	CLRF gbl_t+D'1'
+
+void main()
+
+{		
+			uchar i=0, j=0;
+00D4  1283  	BCF STATUS, RP0
+00D5  1303  	BCF STATUS, RP1
+00D6  01A2  	CLRF main_1_i
+00D7  01A3  	CLRF main_1_j
+
+			uint chksum=0;
+00D8  01A4  	CLRF main_1_chksum
+00D9  01A5  	CLRF main_1_chksum+D'1'
+
+			uchar buffer[17];
+			uchar temp=0;
+00DA  01B7  	CLRF main_1_temp
+
+			init();	
+00DB  2079  	CALL init_00000
+
+			LED1 = 1;								// Blink LED twice - slave
+00DC  1405  	BSF gbl_LED1,0
+
+			delay_ms(500);			
+00DD  30F4  	MOVLW 0xF4
+00DE  00B8  	MOVWF delay_ms_00000_arg_del
+00DF  2004  	CALL delay_ms_00000
+
+			LED1 = 0;
+00E0  1005  	BCF gbl_LED1,0
+
+			delay_ms(500);
+00E1  30F4  	MOVLW 0xF4
+00E2  00B8  	MOVWF delay_ms_00000_arg_del
+00E3  2004  	CALL delay_ms_00000
+
+			LED1 = 1;								// Blink LED twice - slave
+00E4  1405  	BSF gbl_LED1,0
+
+			delay_ms(500);
+00E5  30F4  	MOVLW 0xF4
+00E6  00B8  	MOVWF delay_ms_00000_arg_del
+00E7  2004  	CALL delay_ms_00000
+
+			LED1 = 0;
+00E8  1005  	BCF gbl_LED1,0
+
+			
+			WriteCMD(0xCA81);
+00E9  3081  	MOVLW 0x81
+00EA  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00EB  30CA  	MOVLW 0xCA
+00EC  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00ED  2046  	CALL WriteCMD_00000
+
+			WriteCMD(0xCA83);						// Enable FIFO	
+00EE  3083  	MOVLW 0x83
+00EF  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00F0  30CA  	MOVLW 0xCA
+00F1  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00F2  2046  	CALL WriteCMD_00000
+
+		
+			while(1)
+00F3        label8
+
+			{
+				while(RFM12_IRQ==0)
+00F3  1806  	BTFSC gbl_RFM12_IRQ,0
+00F4  28F3  	GOTO	label8
+
+				{	
+					temp=	ReadFifo();		// read in next Rx byte					
+00F5  20CC  	CALL ReadFifo_00000
+00F6  0838  	MOVF CompTempVarRet581, W
+00F7  00B7  	MOVWF main_1_temp
+
+					buffer[i++] = temp;
+00F8  1383  	BCF	STATUS,IRP
+00F9  3026  	MOVLW LOW(main_1_buffer+D'0')
+00FA  0084  	MOVWF FSR
+00FB  0822  	MOVF main_1_i, W
+00FC  0AA2  	INCF main_1_i, F
+00FD  0784  	ADDWF FSR, F
+00FE  0837  	MOVF main_1_temp, W
+00FF  0080  	MOVWF INDF
+
+					if(temp!=0){
+0100  08B7  	MOVF main_1_temp, F
+0101  1903  	BTFSC STATUS,Z
+0102  291A  	GOTO	label12
+
+						for(t=0;t<4;t++){
+0103  01A0  	CLRF gbl_t
+0104  01A1  	CLRF gbl_t+D'1'
+0105        label9
+0105  3004  	MOVLW 0x04
+0106  0220  	SUBWF gbl_t, W
+0107  0821  	MOVF gbl_t+D'1', W
+0108  1803  	BTFSC STATUS,C
+0109  290C  	GOTO	label10
+010A  1903  	BTFSC STATUS,Z
+010B  290E  	GOTO	label11
+010C        label10
+010C  1FA1  	BTFSS gbl_t+D'1',7
+010D  291A  	GOTO	label12
+010E        label11
+0116  0AA0  	INCF gbl_t, F
+0117  1903  	BTFSC STATUS,Z
+0118  0AA1  	INCF gbl_t+D'1', F
+0119  2905  	GOTO	label9
+011A        label12
+0161  28F3  	GOTO	label8
+
+							LED1=1;						// turn on led
+010E  1405  	BSF gbl_LED1,0
+
+							delay_ms(25);
+010F  3019  	MOVLW 0x19
+0110  00B8  	MOVWF delay_ms_00000_arg_del
+0111  2004  	CALL delay_ms_00000
+
+							LED1=0;						// turn on led
+0112  1005  	BCF gbl_LED1,0
+
+							delay_ms(25);
+0113  3019  	MOVLW 0x19
+0114  00B8  	MOVWF delay_ms_00000_arg_del
+0115  2004  	CALL delay_ms_00000
+
+							}
+					}
+					
+					if (i==17)							// received data + checksum = 17 bytes
+011A  0822  	MOVF main_1_i, W
+011B  3A11  	XORLW 0x11
+011C  1D03  	BTFSS STATUS,Z
+011D  28F3  	GOTO	label8
+
+					{
+						i=0;
+011E  01A2  	CLRF main_1_i
+
+						WriteCMD(0xCA81);				// disable FIFO
+011F  3081  	MOVLW 0x81
+0120  00B8  	MOVWF WriteCMD_00000_arg_CMD
+0121  30CA  	MOVLW 0xCA
+0122  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0123  2046  	CALL WriteCMD_00000
+
+	
+						
+						chksum=0;
+0124  01A4  	CLRF main_1_chksum
+0125  01A5  	CLRF main_1_chksum+D'1'
+
+						for(j=0 ; j<16 ; j++)			// calc checksum
+0126  01A3  	CLRF main_1_j
+0127        label13
+0127  3010  	MOVLW 0x10
+0128  0223  	SUBWF main_1_j, W
+0129  1803  	BTFSC STATUS,C
+012A  2936  	GOTO	label14
+0134  0AA3  	INCF main_1_j, F
+0135  2927  	GOTO	label13
+0136        label14
+
+							chksum+=buffer[j];
+012B  1383  	BCF	STATUS,IRP
+012C  3026  	MOVLW LOW(main_1_buffer+D'0')
+012D  0084  	MOVWF FSR
+012E  0823  	MOVF main_1_j, W
+012F  0784  	ADDWF FSR, F
+0130  0800  	MOVF INDF, W
+0131  07A4  	ADDWF main_1_chksum, F
+0132  1803  	BTFSC STATUS,C
+0133  0AA5  	INCF main_1_chksum+D'1', F
+
+						chksum&=0x0FF;
+0136  01A5  	CLRF main_1_chksum+D'1'
+
+						if(chksum==buffer[16]&&buffer[16]!=0)			// if checksum ok
+0137  0836  	MOVF main_1_buffer+D'16', W
+0138  0624  	XORWF main_1_chksum, W
+0139  1903  	BTFSC STATUS,Z
+013A  0825  	MOVF main_1_chksum+D'1', W
+013B  1D03  	BTFSS STATUS,Z
+013C  2957  	GOTO	label18
+013D  08B6  	MOVF main_1_buffer+D'16', F
+013E  1903  	BTFSC STATUS,Z
+013F  2957  	GOTO	label18
+
+						{
+							for(t=0;t<4;t++){
+0140  01A0  	CLRF gbl_t
+0141  01A1  	CLRF gbl_t+D'1'
+0142        label15
+0142  3004  	MOVLW 0x04
+0143  0220  	SUBWF gbl_t, W
+0144  0821  	MOVF gbl_t+D'1', W
+0145  1803  	BTFSC STATUS,C
+0146  2949  	GOTO	label16
+0147  1903  	BTFSC STATUS,Z
+0148  294B  	GOTO	label17
+0149        label16
+0149  1FA1  	BTFSS gbl_t+D'1',7
+014A  2957  	GOTO	label18
+014B        label17
+0153  0AA0  	INCF gbl_t, F
+0154  1903  	BTFSC STATUS,Z
+0155  0AA1  	INCF gbl_t+D'1', F
+0156  2942  	GOTO	label15
+0157        label18
+
+							LED1=1;						// turn on led
+014B  1405  	BSF gbl_LED1,0
+
+							delay_ms(25);
+014C  3019  	MOVLW 0x19
+014D  00B8  	MOVWF delay_ms_00000_arg_del
+014E  2004  	CALL delay_ms_00000
+
+							LED1=0;						// turn on led
+014F  1005  	BCF gbl_LED1,0
+
+							delay_ms(25);
+0150  3019  	MOVLW 0x19
+0151  00B8  	MOVWF delay_ms_00000_arg_del
+0152  2004  	CALL delay_ms_00000
+
+							}
+							
+						}
+					///	LED1=0;
+						WriteCMD(0xCA81);				// disable FIFO
+0157  3081  	MOVLW 0x81
+0158  00B8  	MOVWF WriteCMD_00000_arg_CMD
+0159  30CA  	MOVLW 0xCA
+015A  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+015B  2046  	CALL WriteCMD_00000
+
+						WriteCMD(0xCA83);				// enable FIFO, re-Sync
+015C  3083  	MOVLW 0x83
+015D  00B8  	MOVWF WriteCMD_00000_arg_CMD
+015E  30CA  	MOVLW 0xCA
+015F  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0160  2046  	CALL WriteCMD_00000
+
+					}//if
+				}//while
+
+			} //while
+}
+
+
+void init(void)
+
+{
+	//osccon = 0x70;				// 8Mhz internal OSC
+	cmcon = 0x07;
+0079  3007  	MOVLW 0x07
+007A  1283  	BCF STATUS, RP0
+007B  1303  	BCF STATUS, RP1
+007C  009F  	MOVWF gbl_cmcon
+
+	//ansel = 0;					// all is digital i/o on PortA
+	option_reg.NOT_RBPU = 0;	// enable pullup resistors on PB
+007D  1683  	BSF STATUS, RP0
+007E  1381  	BCF gbl_option_reg,7
+
+	option_reg.INTEDG = 0;		// falling edge interrupt	
+007F  1301  	BCF gbl_option_reg,6
+
+
+	CONF_LED1_OUT();
+0080  1005  	BCF gbl_LED1_TRIS,0
+
+	LED1=0;
+0081  1283  	BCF STATUS, RP0
+0082  1005  	BCF gbl_LED1,0
+
+	
+	// setup SPI
+	// outputs
+	RFM12_CS_OUT();								// Module Chip Select 
+0083  1683  	BSF STATUS, RP0
+0084  1105  	BCF gbl_RFM12_CS_TRIS,2
+
+	HI_SEL();									// RF CS is Active Low so set High
+0085  1283  	BCF STATUS, RP0
+0086  1505  	BSF gbl_RFM12_CS,2
+
+	
+	SCK_OUT();									// SPI SCK as Output
+0087  1683  	BSF STATUS, RP0
+0088  1185  	BCF gbl_SCK_TRIS,3
+
+	LOW_SCK();
+0089  1283  	BCF STATUS, RP0
+008A  1185  	BCF gbl_SCK,3
+
+	
+	SDO_OUT();									// SPI SDO as Output
+008B  1683  	BSF STATUS, RP0
+008C  1086  	BCF gbl_SDO_TRIS,1
+
+	LOW_SDO();
+008D  1283  	BCF STATUS, RP0
+008E  1086  	BCF gbl_SDO,1
+
+		
+	// inputs
+	RFM12_nIRQ_IN();							// nIRQ
+008F  1683  	BSF STATUS, RP0
+0090  1406  	BSF gbl_RFM12_nIRQ_TRIS,0
+
+	SDI_IN();									// SPI SDI
+0091  1485  	BSF gbl_SDI_TRIS,1
+
+	
+	delay_ms(500);								// Wait for RFM12 POR 
+0092  30F4  	MOVLW 0xF4
+0093  1283  	BCF STATUS, RP0
+0094  00B8  	MOVWF delay_ms_00000_arg_del
+0095  2004  	CALL delay_ms_00000
+
+
+	
+	WriteCMD(0x80F7);	// 915 EL, EF, 12.0pf
+0096  30F7  	MOVLW 0xF7
+0097  00B8  	MOVWF WriteCMD_00000_arg_CMD
+0098  3080  	MOVLW 0x80
+0099  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+009A  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0xA7D0);	// 915=A7D0 904.50MHZ = A258	
+009B  30D0  	MOVLW 0xD0
+009C  00B8  	MOVWF WriteCMD_00000_arg_CMD
+009D  30A7  	MOVLW 0xA7
+009E  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+009F  2046  	CALL WriteCMD_00000
+
+	
+	WriteCMD(0xC623);	// c608=38400 c611=19200 c623= 9600bps	
+00A0  3023  	MOVLW 0x23
+00A1  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00A2  30C6  	MOVLW 0xC6
+00A3  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00A4  2046  	CALL WriteCMD_00000
+
+	
+	WriteCMD(0xC22C);	// Data Filter: AL, !ML, digital filter,  4 dqd	
+00A5  302C  	MOVLW 0x2C
+00A6  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00A7  30C2  	MOVLW 0xC2
+00A8  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00A9  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0xC4F7);	// AFC Autotune, -10khz..+7.5Khz, !st, !fi, OE, EN	
+00AA  30F7  	MOVLW 0xF7
+00AB  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00AC  30C4  	MOVLW 0xC4
+00AD  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00AE  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0x96A0);	// P16, VDI, FAST, 65khz, 0dBm, -103dBm
+00AF  30A0  	MOVLW 0xA0
+00B0  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00B1  3096  	MOVLW 0x96
+00B2  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00B3  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0xCA81);	// FIFO8, SYNC, !ff, DR
+00B4  3081  	MOVLW 0x81
+00B5  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00B6  30CA  	MOVLW 0xCA
+00B7  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00B8  2046  	CALL WriteCMD_00000
+
+	
+	//TX Config
+	//WriteCMD(0x9850);	// !mp, 9810=30Khz, MAX out
+	
+	
+	WriteCMD(0xE000);	// NOT USE
+00B9  01B8  	CLRF WriteCMD_00000_arg_CMD
+00BA  30E0  	MOVLW 0xE0
+00BB  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00BC  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0xC80E);	// NOT USE
+00BD  300E  	MOVLW 0x0E
+00BE  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00BF  30C8  	MOVLW 0xC8
+00C0  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00C1  2046  	CALL WriteCMD_00000
+
+	WriteCMD(0xC000);	// CLK 1mhz, 2.2v 
+00C2  01B8  	CLRF WriteCMD_00000_arg_CMD
+00C3  30C0  	MOVLW 0xC0
+00C4  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00C5  2046  	CALL WriteCMD_00000
+
+	
+	WriteCMD(0x8280);	// ER, EBB, !ET, ES, EX, !EB, !EW, !DC	
+00C6  3080  	MOVLW 0x80
+00C7  00B8  	MOVWF WriteCMD_00000_arg_CMD
+00C8  3082  	MOVLW 0x82
+00C9  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00CA  2046  	CALL WriteCMD_00000
+
+
+
+}
+00CB  0008  	RETURN
+
+
+
+// Bitbang binary 1 via SPI
+void Write1(void)
+
+{
+	SDO=1;
+0018  1283  	BCF STATUS, RP0
+0019  1303  	BCF STATUS, RP1
+001A  1486  	BSF gbl_SDO,1
+
+	SCK=0;
+001B  1185  	BCF gbl_SCK,3
+
+	nop();
+001C  0000  	NOP
+
+	nop();
+001D  0000  	NOP
+
+	nop();
+001E  0000  	NOP
+
+	nop();
+001F  0000  	NOP
+
+	nop();
+0020  0000  	NOP
+
+	nop();
+0021  0000  	NOP
+
+	nop();
+0022  0000  	NOP
+
+	nop();
+0023  0000  	NOP
+
+	nop();
+0024  0000  	NOP
+
+	nop();
+0025  0000  	NOP
+
+	nop();
+0026  0000  	NOP
+
+	nop();
+0027  0000  	NOP
+
+	nop();
+0028  0000  	NOP
+
+	nop();
+0029  0000  	NOP
+
+	nop();
+002A  0000  	NOP
+
+	nop();
+002B  0000  	NOP
+
+	SCK=1;
+002C  1585  	BSF gbl_SCK,3
+
+	nop();
+002D  0000  	NOP
+
+}
+002E  0008  	RETURN
+
+
+// bitbang binary 0 via SPI
+void Write0(void)
+
+{
+	SDO=0;
+002F  1283  	BCF STATUS, RP0
+0030  1303  	BCF STATUS, RP1
+0031  1086  	BCF gbl_SDO,1
+
+	SCK=0;
+0032  1185  	BCF gbl_SCK,3
+
+	nop();
+0033  0000  	NOP
+
+	nop();
+0034  0000  	NOP
+
+	nop();
+0035  0000  	NOP
+
+	nop();
+0036  0000  	NOP
+
+	nop();
+0037  0000  	NOP
+
+	nop();
+0038  0000  	NOP
+
+	nop();
+0039  0000  	NOP
+
+	nop();
+003A  0000  	NOP
+
+	nop();
+003B  0000  	NOP
+
+	nop();
+003C  0000  	NOP
+
+	nop();
+003D  0000  	NOP
+
+	nop();
+003E  0000  	NOP
+
+	nop();
+003F  0000  	NOP
+
+	nop();
+0040  0000  	NOP
+
+	nop();
+0041  0000  	NOP
+
+	nop();
+0042  0000  	NOP
+
+	SCK=1;
+0043  1585  	BSF gbl_SCK,3
+
+	nop();
+0044  0000  	NOP
+
+}
+0045  0008  	RETURN
+
+/*
+
+  Write a Command to the RFM Module using SPI
+  
+  Requires: 16bit valid command
+  Returns:  16bit result from transaction
+  
+  This is a bi-directional transfer.  
+  A command is clocked out to the RFM a bit at a time.  
+  At the same time a result is clocked back in a bit at a time.
+   
+*/
+uint WriteCMD(uint CMD)
+
+{
+	
+	uint RESULT = 0;							// Holds the received SDI
+0046  01BA  	CLRF WriteCMD_00000_1_RESULT
+0047  01BB  	CLRF WriteCMD_00000_1_RESULT+D'1'
+
+	uchar n=16;									// number of bits in SPI Command we need to send
+0048  3010  	MOVLW 0x10
+0049  00BC  	MOVWF WriteCMD_00000_1_n
+
+	LOW_SCK();									// SCK LOW
+004A  1185  	BCF gbl_SCK,3
+
+	LOW_SEL();									// CS LOW
+004B  1105  	BCF gbl_RFM12_CS,2
+
+	while(n--)									// Send All 16 Bits MSB First
+004C        label3
+004C  083C  	MOVF WriteCMD_00000_1_n, W
+004D  00BD  	MOVWF CompTempVar580
+004E  03BC  	DECF WriteCMD_00000_1_n, F
+004F  08BD  	MOVF CompTempVar580, F
+0050  1903  	BTFSC STATUS,Z
+0051  2860  	GOTO	label6
+005F  284C  	GOTO	label3
+0060        label6
+
+	{
+		if (CMD&0x8000)
+0052  1FB9  	BTFSS WriteCMD_00000_arg_CMD+D'1',7
+0053  2856  	GOTO	label4
+0056        label4
+
+		{
+			Write1();							// Write 1 via SDI		
+0054  2018  	CALL Write1_00000
+
+		}
+		else
+0055  2857  	GOTO	label5
+0057        label5
+
+		{
+			Write0();							// Write 0 via SPI
+0056  202F  	CALL Write0_00000
+
+		}
+		
+		RESULT<<=1;								// Shift left for next bit to receive
+0057  1003  	BCF STATUS,C
+0058  0DBA  	RLF WriteCMD_00000_1_RESULT, F
+0059  0DBB  	RLF WriteCMD_00000_1_RESULT+D'1', F
+
+		if(SDI)									// Check if we received a high on SDI
+005A  1885  	BTFSC gbl_SDI,1
+
+			RESULT |= 0x0001;					// RESULT LSB = 1		
+005B  143A  	BSF WriteCMD_00000_1_RESULT,0
+
+		CMD<<=1;								// Shift left for next bit to send
+005C  1003  	BCF STATUS,C
+005D  0DB8  	RLF WriteCMD_00000_arg_CMD, F
+005E  0DB9  	RLF WriteCMD_00000_arg_CMD+D'1', F
+
+	}
+	LOW_SCK();									// SCK LOW
+0060  1185  	BCF gbl_SCK,3
+
+	HI_SEL();									// CS HIGH - Finished Sending Command
+0061  1505  	BSF gbl_RFM12_CS,2
+
+	return RESULT;
+0062  083A  	MOVF WriteCMD_00000_1_RESULT, W
+0063  00BE  	MOVWF CompTempVarRet579
+0064  083B  	MOVF WriteCMD_00000_1_RESULT+D'1', W
+0065  00BF  	MOVWF CompTempVarRet579+D'1'
+
+}
+0066  0008  	RETURN
+
+
+void rf_SendByte(uchar data)
+{
+	uchar cmd = 0xB800 | data;
+	WaitReady();//while(RFM12_IRQ==1);
+	WriteCMD(cmd);
+
+}
+
+/* 
+  Waits for RFM 12 to become ready by checking first bit of status register
+  Before we can Tx or Rx data the RFM12 needs to be ready, 
+  i.e. not in the middle of transmitting a previous byte
+  
+  This function is blocking and will only return when it is ready to Tx or Rx
+*/
+void WaitReady(void)
+
+{	
+//#ifdef DEBUG							// always return for simulator
+//		return;
+//#endif
+	unsigned long timeout = 0;
+0067  1283  	BCF STATUS, RP0
+0068  1303  	BCF STATUS, RP1
+0069  01B8  	CLRF WaitReady_00000_1_timeout
+006A  01B9  	CLRF WaitReady_00000_1_timeout+D'1'
+006B  01BA  	CLRF WaitReady_00000_1_timeout+D'2'
+006C  01BB  	CLRF WaitReady_00000_1_timeout+D'3'
+
+	bit READY = 0;
+006D  103C  	BCF WaitReady_00000_1_READY,0
+
+	while(READY == 0)						
+006E        label7
+006E  183C  	BTFSC WaitReady_00000_1_READY,0
+0078  286E  	GOTO	label7
+
+	{
+		LOW_SCK();						// SCK LOW
+0070  1185  	BCF gbl_SCK,3
+
+		LOW_SEL();						// CS LOW
+0071  1105  	BCF gbl_RFM12_CS,2
+
+		Write0();
+0072  202F  	CALL Write0_00000
+
+		if(SDI==1)						// check RGIT bit of status (first bit)
+0073  1885  	BTFSC gbl_SDI,1
+
+		{ 								// If HIGH then Tx/RX is ready to accept the next byte
+			READY = 1;
+0074  143C  	BSF WaitReady_00000_1_READY,0
+
+		}	
+		LOW_SCK();						// SCK LOW
+0075  1185  	BCF gbl_SCK,3
+
+		LOW_SDO();
+0076  1086  	BCF gbl_SDO,1
+
+		HI_SEL();						// CS HIGH - Finished Sending Command
+0077  1505  	BSF gbl_RFM12_CS,2
+
+	}
+}
+006F  0008  	RETURN
+
+
+
+uchar ReadFifo(void)
+
+{
+	WaitReady();
+00CC  2067  	CALL WaitReady_00000
+
+	return (WriteCMD(0xB000) & 0xFF);
+00CD  01B8  	CLRF WriteCMD_00000_arg_CMD
+00CE  30B0  	MOVLW 0xB0
+00CF  00B9  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+00D0  2046  	CALL WriteCMD_00000
+00D1  083E  	MOVF CompTempVarRet579, W
+00D2  00B8  	MOVWF CompTempVarRet581
+
+}
+00D3  0008  	RETURN
+
+}
+////////////////////////////////////////
+// Code with no source :-)
+////////////////////////////////////////
+0000  2962  	GOTO	_startup
+
+0004        delay_ms_00000
+0004        ; { delay_ms ; function begin
+0004  08B8  	MOVF delay_ms_00000_arg_del, F
+0005  1D03  	BTFSS STATUS,Z
+0006  2808  	GOTO	label1
+0007  0008  	RETURN
+0008        label1
+0008  30F9  	MOVLW 0xF9
+0009        label2
+0009  0000  	NOP
+000A  0000  	NOP
+000B  0000  	NOP
+000C  0000  	NOP
+000D  3EFF  	ADDLW 0xFF
+000E  1D03  	BTFSS STATUS,Z
+000F  2809  	GOTO	label2
+0010  0000  	NOP
+0011  0000  	NOP
+0012  0000  	NOP
+0013  0000  	NOP
+0014  0000  	NOP
+0015  0BB8  	DECFSZ delay_ms_00000_arg_del, F
+0016  2808  	GOTO	label1
+0017  0008  	RETURN
+0018        ; } delay_ms function end
+
+
+0162        _startup
+
+0166  118A  	BCF PCLATH,3
+0167  120A  	BCF PCLATH,4
+0168  28D4  	GOTO	main
+
+2007  3F10  	DW 0x3F10

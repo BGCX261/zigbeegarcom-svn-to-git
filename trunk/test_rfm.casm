@@ -1,0 +1,2139 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 6.95
+;// License Type  : Lite License (Unregistered)
+;// Limitations   : PIC12,PIC16 max code size:2048 words, max RAM banks:2, Non commercial use only
+;/////////////////////////////////////////////////////////////////////////////////
+
+/**********************************************************
+* test_rfm.c
+*
+* Tests functionality of RFM12 module by testing master and slave modes
+*
+* Pressing the trgger button on powerup will put it in MASTER mode 
+*	and will blink the LED once
+*
+* slave mode will blink twice on powerup - no button needs to be pressed
+*
+* Master continually transmits 16bytes + checksum at the configured datarate and frequency
+*
+* Slave Mode will continually Receive data and if the checksum is ok will blink the LED
+*  
+*
+* Copyright (c) 2007 Stephen Eaton 
+* 	seaton@everythingrobotics.com
+*
+* ===========================================================
+* License:
+*
+*   GPLv3 http://www.gpl.org/ 
+*
+* ===========================================================
+*
+**********************************************************/
+#include <system.h>
+#include "..\common.h"
+#include "..\lib\rfm12.h"
+
+
+#pragma CLOCK_FREQ 8000000
+
+#pragma DATA _CONFIG, _WDT_OFF & _PWRTE_ON & _INTOSC_OSC_NOCLKOUT & _MCLRE_OFF & _BODEN_OFF & _LVP_OFF
+
+// & _IESO_OFF  &     & _CPD_ON
+
+// Local RF Variables
+#define BAUD 9600
+#define FREQ 0x7D0   // 915.00Mhz
+
+typedef enum {
+	START=0,
+	PACKET,
+	CHECKSUM,
+	TX
+} STATE_MACHINE;
+
+typedef enum {
+	SLAVE=0,
+	MASTER
+} MODE;
+
+MODE mode=SLAVE;
+027E  1283  	BCF STATUS, RP0
+027F  1303  	BCF STATUS, RP1
+0280  01C9  	CLRF gbl_mode
+
+STATE_MACHINE rx_state=START;
+0281  01CA  	CLRF gbl_rx_state
+
+uchar flag;
+//uchar temp=0;
+//  Function declarations
+void init(void);
+
+// handles interrupt
+void interrupt()
+
+{
+	if(intcon.INTF)					// b0 interrupt falling edge
+0285  1C8B  	BTFSS gbl_intcon,1
+0286  2A8C  	GOTO	label34
+028C        label34
+
+    {
+    	flag=1;
+0287  3001  	MOVLW 0x01
+0288  1283  	BCF STATUS, RP0
+0289  1303  	BCF STATUS, RP1
+028A  00CB  	MOVWF gbl_flag
+
+    	intcon.INTF = 0;			// clear interrupt
+028B  108B  	BCF gbl_intcon,1
+
+	}	
+}
+028C  1283  	BCF STATUS, RP0
+028D  1303  	BCF STATUS, RP1
+028E  0E48  	SWAPF Int1BContext+D'2', W
+028F  0084  	MOVWF FSR
+0290  0E47  	SWAPF Int1BContext+D'1', W
+0291  008A  	MOVWF PCLATH
+0292  0E46  	SWAPF Int1BContext, W
+0293  0083  	MOVWF STATUS
+0294  0EFF  	SWAPF Int1Context, F
+0295  0E7F  	SWAPF Int1Context, W
+0296  0009  	RETFIE
+
+
+void main()
+
+{
+	uchar buffer[32];
+	uchar i=0,j=0;
+01B4  1283  	BCF STATUS, RP0
+01B5  1303  	BCF STATUS, RP1
+01B6  01EC  	CLRF main_1_i
+01B7  01ED  	CLRF main_1_j
+
+	uchar chksum=0;
+01B8  01EE  	CLRF main_1_chksum
+
+	uchar temp=0;
+01B9  01EF  	CLRF main_1_temp
+
+	uchar datavari=0x31;
+01BA  3031  	MOVLW 0x31
+01BB  00F0  	MOVWF main_1_datavari
+
+	delay_ms(3000);
+01BC  30B8  	MOVLW 0xB8
+01BD  00F1  	MOVWF delay_ms_00000_arg_del
+01BE  2010  	CALL delay_ms_00000
+
+	init();
+01BF  219B  	CALL init_00000
+
+	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V		
+01C0  30E0  	MOVLW 0xE0
+01C1  00FB  	MOVWF WriteCMD_00000_arg_CMD
+01C2  30C0  	MOVLW 0xC0
+01C3  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+01C4  2024  	CALL WriteCMD_00000
+
+	/*WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+*/
+	//rfm12_Basic_Config();
+	
+//	while(1){
+//	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_100 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V		
+//	}
+	// quick way of setting master/slave....push manual trigger button while powering on
+	// TODO: save mode in FLASH so don't have to keep doing this on powerup
+	if(TRIG_IN == 1)
+01C5  1283  	BCF STATUS, RP0
+01C6  1E06  	BTFSS gbl_TRIG_IN,4
+01C7  29CA  	GOTO	label21
+01CA        label21
+
+		mode=SLAVE;			// not pushed so leave as slave - default
+01C8  01C9  	CLRF gbl_mode
+
+	else
+01C9  29CC  	GOTO	label22
+01CC        label22
+
+		mode=MASTER;		// button pushed so now is master
+01CA  3001  	MOVLW 0x01
+01CB  00C9  	MOVWF gbl_mode
+
+	
+	switch(mode)
+01D3  29EA  	GOTO	label25
+01EA        label25
+
+	{
+		case SLAVE:				
+01CC  0849  	MOVF gbl_mode, W
+01CD  3A00  	XORLW 0x00
+01CE  1903  	BTFSC STATUS,Z
+01CF  29D4  	GOTO	label23
+01D4        label23
+
+			rfm12_ResetFifo();						// Reset Fifo ready to receive
+01D4  2180  	CALL rfm12_Rese_00023
+
+			rfm12_EnableRx();						// enable Rx		
+01D5  2193  	CALL rfm12_Enab_00018
+
+			LED1 = 1;								// Blink LED twice - short
+01D6  1283  	BCF STATUS, RP0
+01D7  1405  	BSF gbl_LED1,0
+
+			delay_ms(250);		
+01D8  30FA  	MOVLW 0xFA
+01D9  00F1  	MOVWF delay_ms_00000_arg_del
+01DA  2010  	CALL delay_ms_00000
+
+			LED1 = 0;
+01DB  1005  	BCF gbl_LED1,0
+
+			delay_ms(250);
+01DC  30FA  	MOVLW 0xFA
+01DD  00F1  	MOVWF delay_ms_00000_arg_del
+01DE  2010  	CALL delay_ms_00000
+
+			LED1 = 1;
+01DF  1405  	BSF gbl_LED1,0
+
+			delay_ms(250);
+01E0  30FA  	MOVLW 0xFA
+01E1  00F1  	MOVWF delay_ms_00000_arg_del
+01E2  2010  	CALL delay_ms_00000
+
+			LED1 = 0;
+01E3  1005  	BCF gbl_LED1,0
+
+		break;
+01E4  29EA  	GOTO	label25
+
+		
+		case MASTER:
+01D0  3A01  	XORLW 0x01
+01D1  1903  	BTFSC STATUS,Z
+01D2  29E5  	GOTO	label24
+01E5        label24
+
+			//rfm12_ResetFifo();
+			//rfm12_EnableTx();						// enable Tx
+			LED1 = 1;								// Blink LED once - long
+01E5  1405  	BSF gbl_LED1,0
+
+			delay_ms(500);			
+01E6  30F4  	MOVLW 0xF4
+01E7  00F1  	MOVWF delay_ms_00000_arg_del
+01E8  2010  	CALL delay_ms_00000
+
+			LED1 = 0;
+01E9  1005  	BCF gbl_LED1,0
+
+		break;
+	} // switch
+//	while(1){
+	//	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+//	C0E0
+//	}
+	
+	while(1)
+027D  29EA  	GOTO	label25
+
+	{
+		switch(mode)
+01F2  29EA  	GOTO	label25
+
+		{
+			case SLAVE:		
+01EA  1283  	BCF STATUS, RP0
+01EB  0849  	MOVF gbl_mode, W
+01EC  3A00  	XORLW 0x00
+01ED  1903  	BTFSC STATUS,Z
+01EE  29F3  	GOTO	label26
+01F3        label26
+
+										
+				while(1)						// !nIRQ
+0236  29F3  	GOTO	label26
+
+				{	
+					
+					
+					temp= rfm12_ReadFifo();		// read in next Rx byte
+01F3  218B  	CALL rfm12_Read_00024
+01F4  0871  	MOVF CompTempVarRet656, W
+01F5  1283  	BCF STATUS, RP0
+01F6  00EF  	MOVWF main_1_temp
+
+					if(temp==0x30){
+01F7  086F  	MOVF main_1_temp, W
+01F8  3A30  	XORLW 0x30
+01F9  1D03  	BTFSS STATUS,Z
+01FA  29FD  	GOTO	label27
+01FD        label27
+
+						i=0;
+01FB  01EC  	CLRF main_1_i
+
+						
+					}else{
+01FC  2A09  	GOTO	label28
+
+						if(i<4){
+01FD  3004  	MOVLW 0x04
+01FE  026C  	SUBWF main_1_i, W
+01FF  1803  	BTFSC STATUS,C
+0200  2A09  	GOTO	label28
+0209        label28
+
+							buffer[i++]=temp;
+0201  1383  	BCF	STATUS,IRP
+0202  304C  	MOVLW LOW(main_1_buffer+D'0')
+0203  0084  	MOVWF FSR
+0204  086C  	MOVF main_1_i, W
+0205  0AEC  	INCF main_1_i, F
+0206  0784  	ADDWF FSR, F
+0207  086F  	MOVF main_1_temp, W
+0208  0080  	MOVWF INDF
+
+						}
+					
+					}				
+						
+					
+					if (i==4)							// received data + checksum = 17 bytes
+0209  086C  	MOVF main_1_i, W
+020A  3A04  	XORLW 0x04
+020B  1D03  	BTFSS STATUS,Z
+020C  29F3  	GOTO	label26
+
+					{	
+					//	delay_ms(50);
+				//			LED1=1;						// turn on led
+				//		delay_ms(50);
+				//		LED1=0;
+			
+							
+						i=0;
+020D  01EC  	CLRF main_1_i
+
+						rfm12_DisableRx();
+020E  2197  	CALL rfm12_Disa_0001A
+
+						rfm12_DisableFifo();			// disables fifo 
+020F  3001  	MOVLW 0x01
+0210  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0211  30CA  	MOVLW 0xCA
+0212  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0213  2024  	CALL WriteCMD_00000
+
+						chksum=0;
+0214  1283  	BCF STATUS, RP0
+0215  01EE  	CLRF main_1_chksum
+
+						for(j=0 ; j<3 ; j++)			// calc checksum
+0216  01ED  	CLRF main_1_j
+0217        label29
+0217  3003  	MOVLW 0x03
+0218  026D  	SUBWF main_1_j, W
+0219  1803  	BTFSC STATUS,C
+021A  2A24  	GOTO	label30
+0222  0AED  	INCF main_1_j, F
+0223  2A17  	GOTO	label29
+0224        label30
+
+							chksum+=buffer[j];
+021B  1383  	BCF	STATUS,IRP
+021C  304C  	MOVLW LOW(main_1_buffer+D'0')
+021D  0084  	MOVWF FSR
+021E  086D  	MOVF main_1_j, W
+021F  0784  	ADDWF FSR, F
+0220  0800  	MOVF INDF, W
+0221  07EE  	ADDWF main_1_chksum, F
+
+							
+							
+					//	chksum&=0x0FF;
+						
+						/*
+						if(buffer[0]==0x31&&buffer[1]==0x32&&buffer[2]==0x33){
+						delay_ms(30);
+							LED1=1;						// turn on led
+							delay_ms(30);
+							LED1=0;
+						}*/
+						/*
+						if(0x96==buffer[3])			// if checksum ok
+						{
+							
+						}*/
+						if(chksum==buffer[3])			// if checksum ok
+0224  084F  	MOVF main_1_buffer+D'3', W
+0225  066E  	XORWF main_1_chksum, W
+0226  1D03  	BTFSS STATUS,Z
+0227  2A30  	GOTO	label31
+0230        label31
+
+						{
+							delay_ms(5);
+0228  3005  	MOVLW 0x05
+0229  00F1  	MOVWF delay_ms_00000_arg_del
+022A  2010  	CALL delay_ms_00000
+
+							LED1=1;						// turn on led
+022B  1405  	BSF gbl_LED1,0
+
+							delay_ms(5);
+022C  3005  	MOVLW 0x05
+022D  00F1  	MOVWF delay_ms_00000_arg_del
+022E  2010  	CALL delay_ms_00000
+
+							LED1=0;
+022F  1005  	BCF gbl_LED1,0
+
+						}
+						
+					//	delay_ms(250);
+					//	LED1=0;
+						rfm12_EnableFifo();				// enable FIFO
+0230  3083  	MOVLW 0x83
+0231  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0232  30CA  	MOVLW 0xCA
+0233  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0234  2024  	CALL WriteCMD_00000
+
+						rfm12_EnableRx();				// enable Rx
+0235  2193  	CALL rfm12_Enab_00018
+
+					//		LED1=1;	
+				//		delay_ms(40);
+					//	LED1=0;	
+				//		delay_ms(40);
+				 	}//if
+				}//while
+			break; // SLAVE
+			
+			case MASTER:
+01EF  3A01  	XORLW 0x01
+01F0  1903  	BTFSC STATUS,Z
+01F1  2A37  	GOTO	label32
+0237        label32
+
+				LED1=1;
+0237  1405  	BSF gbl_LED1,0
+
+				LED1=1;
+0238  1405  	BSF gbl_LED1,0
+
+				delay_ms(3);
+0239  3003  	MOVLW 0x03
+023A  00F1  	MOVWF delay_ms_00000_arg_del
+023B  2010  	CALL delay_ms_00000
+
+				LED1=0;
+023C  1005  	BCF gbl_LED1,0
+
+					delay_ms(3);
+023D  3003  	MOVLW 0x03
+023E  00F1  	MOVWF delay_ms_00000_arg_del
+023F  2010  	CALL delay_ms_00000
+
+				chksum = 0;
+0240  01EE  	CLRF main_1_chksum
+
+				//rfm12_Init_Buffer();
+				//build packet
+				//rfm12_SetPower(RFM12_TXCTL_POWER_0, RFM12_TXCTL_MODULATION_90);
+				LED1=!LED1;
+0241  01F1  	CLRF CompTempVar613
+0242  1C05  	BTFSS gbl_LED1,0
+0243  0AF1  	INCF CompTempVar613, F
+0244  1871  	BTFSC CompTempVar613,0
+0245  1405  	BSF gbl_LED1,0
+0246  1C71  	BTFSS CompTempVar613,0
+0247  1005  	BCF gbl_LED1,0
+
+				rfm12_EnableTx();			//TODO: turn on transmitter
+0248  2195  	CALL rfm12_Enab_00017
+
+ 
+				rfm12_Tx_Byte(0xAA);		// Preamble
+0249  30AA  	MOVLW 0xAA
+024A  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+024B  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0xAA);
+024C  30AA  	MOVLW 0xAA
+024D  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+024E  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0xAA);
+024F  30AA  	MOVLW 0xAA
+0250  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0251  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0xAA);
+0252  30AA  	MOVLW 0xAA
+0253  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0254  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0x2D);  		// Sync Hi - 0x2DD4
+0255  302D  	MOVLW 0x2D
+0256  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0257  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0xD4);		// Sync Lo
+0258  30D4  	MOVLW 0xD4
+0259  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+025A  2178  	CALL rfm12_Tx_B_00020
+
+				
+				rfm12_Tx_Byte(0x30);		// Start data
+025B  3030  	MOVLW 0x30
+025C  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+025D  2178  	CALL rfm12_Tx_B_00020
+
+				//chksum +=0x30;
+				//rfm12_Tx_Byte(0x31);		chksum +=0x31;
+				rfm12_Tx_Byte(0x31);		
+025E  3031  	MOVLW 0x31
+025F  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0260  2178  	CALL rfm12_Tx_B_00020
+
+				chksum +=0x31;
+0261  3031  	MOVLW 0x31
+0262  1283  	BCF STATUS, RP0
+0263  07EE  	ADDWF main_1_chksum, F
+
+				
+				rfm12_Tx_Byte(0x32);		
+0264  3032  	MOVLW 0x32
+0265  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0266  2178  	CALL rfm12_Tx_B_00020
+
+				chksum +=0x32;
+0267  3032  	MOVLW 0x32
+0268  1283  	BCF STATUS, RP0
+0269  07EE  	ADDWF main_1_chksum, F
+
+				
+				rfm12_Tx_Byte(0x33);		
+026A  3033  	MOVLW 0x33
+026B  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+026C  2178  	CALL rfm12_Tx_B_00020
+
+				chksum +=0x33;
+026D  3033  	MOVLW 0x33
+026E  1283  	BCF STATUS, RP0
+026F  07EE  	ADDWF main_1_chksum, F
+
+				
+			/*	
+				rfm12_Tx_Byte(0x32);		
+				chksum += 0x32;
+				rfm12_Tx_Byte(0x33);		
+				chksum += 0x33;
+				rfm12_Tx_Byte(0x34);		
+				chksum += 0x34;
+				rfm12_Tx_Byte(0x35);		
+				chksum += 0x35;
+				rfm12_Tx_Byte(0x36);		
+				chksum += 0x36;
+				rfm12_Tx_Byte(0x37);		
+				chksum += 0x37;
+				rfm12_Tx_Byte(0x38);		
+				chksum += 0x38;
+				rfm12_Tx_Byte(0x39);		
+				chksum += 0x39;
+				rfm12_Tx_Byte(0x3A);		
+				chksum += 0x3A;
+				rfm12_Tx_Byte(0x3B);		
+				chksum += 0x3B;
+				rfm12_Tx_Byte(0x3C);		
+				chksum += 0x3C;
+				rfm12_Tx_Byte(0x3D);		
+				chksum += 0x3D;
+				rfm12_Tx_Byte(0x3E);		
+				chksum += 0x3E;
+				rfm12_Tx_Byte(0x3F);		
+				chksum += 0x3F;
+			*/
+				//chksum &= 0x0ff;
+				rfm12_Tx_Byte(chksum);
+0270  086E  	MOVF main_1_chksum, W
+0271  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0272  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0x3F);		//final
+0273  303F  	MOVLW 0x3F
+0274  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0275  2178  	CALL rfm12_Tx_B_00020
+
+				
+				
+				rfm12_Tx_Byte(0xAA);
+0276  30AA  	MOVLW 0xAA
+0277  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+0278  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_Tx_Byte(0xAA);
+0279  30AA  	MOVLW 0xAA
+027A  00F1  	MOVWF rfm12_Tx_B_00020_arg_data
+027B  2178  	CALL rfm12_Tx_B_00020
+
+				rfm12_DisableTx();				//TODO: turn off Tx
+027C  2199  	CALL rfm12_Disa_00019
+
+			
+			
+				
+			break; // MASTER
+		} // switch
+		
+	}//while
+}
+
+
+
+void init(void)
+
+{	
+	//osccon = 0x70;				// 8Mhz internal OSC
+	//ansel = 0;					// all is digital i/o on PortA
+	cmcon=0x07;
+019B  3007  	MOVLW 0x07
+019C  1283  	BCF STATUS, RP0
+019D  1303  	BCF STATUS, RP1
+019E  009F  	MOVWF gbl_cmcon
+
+	CONF_LED1_OUT();
+019F  1683  	BSF STATUS, RP0
+01A0  1005  	BCF gbl_LED1_TRIS,0
+
+	LED1=0;
+01A1  1283  	BCF STATUS, RP0
+01A2  1005  	BCF gbl_LED1,0
+
+	
+	/**************************************************************************
+	* OPTION REGISTER
+	* 
+	* bit 7     RBPU: PORTB Pull-up Enable bit
+	*			1 = PORTB pull-ups are disabled
+	*			0 = PORTB pull-ups are enabled by individual port latch values
+	*
+	* bit 6 	INTEDG: Interrupt Edge Select bit
+	*			1 = Interrupt on rising edge of RB0/INT pin
+	*			0 = Interrupt on falling edge of RB0/INT pin
+	*
+	* bit 5 	T0CS: TMR0 Clock Source Select bit
+	*			1 = Transition on RA4/T0CKI/C2OUT pin
+	*			0 = Internal instruction cycle clock (CLKO)
+	*
+	* bit 4 	T0SE: TMR0 Source Edge Select bit
+	*			1 = Increment on high-to-low transition on RA4/T0CKI/C2OUT pin
+	*			0 = Increment on low-to-high transition on RA4/T0CKI/C2OUT pin
+	*
+	* bit 3 	PSA: Prescaler Assignment bit
+	*			1 = Prescaler is assigned to the WDT
+	*			0 = Prescaler is assigned to the Timer0 module
+	*
+	* bit 2-0   PS<2:0>: Prescaler Rate Select bits
+	*			Bit Value TMR0 Rate WDT Rate
+	*				000 	1:2 	1:1
+	*				001 	1:4 	1:2
+	*				010 	1:8 	1:4
+	*				011 	1:16 	1:8
+	*				100 	1:32 	1:16
+	*				101 	1:64 	1:32
+	*				110 	1:128 	1:64
+	*				111 	1:256 	1:128
+	**************************************************************************/
+	// configure PortB
+	
+	
+	option_reg.NOT_RBPU = 0;	// enable pullup resistors on PB
+01A3  1683  	BSF STATUS, RP0
+01A4  1381  	BCF gbl_option_reg,7
+
+	option_reg.INTEDG = 0;	// falling edge interrupt
+01A5  1301  	BCF gbl_option_reg,6
+
+    // configure Timer0    
+    //option_reg.T0CS = 0; 	// use internal clock
+    //option_reg.PSA = 0; 	// use prescaler from timer 0   
+    // so we get an interrupt around every 205.2us with 10MHz Clock
+    // set prescaller to divide by 2
+    //option_reg.PS0 = 0;
+    //option_reg.PS1 = 0;
+    //option_reg.PS2 = 0;
+    
+    /**************************************************************************
+	* T1CON: TIMER1 CONTROL REGISTER
+	*
+	* bit 7     Unimplemented
+	*
+	* bit 6     T1RUN: Timer1 System Clock Status bit
+	*           1 = System clock is derived from Timer1 oscillator
+	*           0 = System clock is derived from another source
+	*
+	* bit 5-4   T1CKPS<1:0>: Timer1 Input Clock Prescale Select bits
+	*           11 = 1:8 Prescale value
+	*           10 = 1:4 Prescale value
+	*           01 = 1:2 Prescale value
+	*           00 = 1:1 Prescale value
+	*
+	* bit 3     T1OSCEN: Timer1 Oscillator Enable Control bit
+	*           1 = Oscillator is enabled
+	*           0 = Oscillator is shut off
+	*
+	* bit 2     T1SYNC: Timer1 External Clock Input Sychronization Control bit
+	*           TMR1CS = 1:
+	*           1 = Do not synchronize the external clock input
+	*           0 = Synchronize external clock input
+	*           TMR1CS = 0:
+	*           This bit is ignored.
+	*
+	* bit 1     TMR1CS: Timer1 Clock Source Select bit
+	*           1 = External clock from pin ...
+	*           0 = Internal clock (Fosc/4)
+	*
+	* bit 0     TMR1ON: Timer1 On bit
+	*           1 = Enables Timer1
+	*           0 = Stops Timer1
+	**************************************************************************/
+
+    /**************************************************************************
+	* ANSEL REGISTER PIC16F88 DEVICES ONLY
+	*
+	* bit 7     Unimplemented
+	*
+	* bit 6-0   ANS<6:0>: Analog Input Select bits
+	*           1 = Analog I/O
+	*           0 = Digital I/O
+	**************************************************************************/
+            
+    
+    /**************************************************************************
+	* INTCON: INTERRUPT CONTROL REGISTER
+	*
+	* bit 7     GIE: Global Interrupt Enable bit
+	*           1 = Enables all unmasked interrupts
+	*           0 = Disables all interrupts
+	*
+	* bit 6     PEIE: Peripheral Enable Interrupt Enable bit
+	*           1 = Enables all unmasked peripheral interrupts
+	*           0 = Disables all peripheral interrupts
+	*
+	* bit 5     TMR0IE: TMR0 Overflow Interrupt Enable bit
+	*           1 = Enables the TMR0 interrupt
+	*           0 = Disables the TMR0 interrupt
+	*
+	* bit 4     INTE: RB0/INT External Interrupt Enable bit
+	*           1 = Enables the RB0/INT external interrupt
+	*           0 = Disables the RB0/INT external interrupt
+	*
+	* bit 3     RBIE: RB Port Change Interrupt Enable bit
+	*           1 = Enables the RB port change interrrupt
+	*           0 = Disables the RB port change interrrupt
+	*
+	* bit 2     TMR0IF: TMR0 Overflow Interrupt Flag bit
+	*           1 = TMR0 register has overflowed (must be cleared in software)
+	*           0 = TMR0 register did not overfow
+	*
+	* bit 1     INTF: RB0/INT External Interrupt Flag bit
+	*           1 = The RB0/INT external interrupt occurred (must be cleared in
+	*               software)
+	*           0 = The RB0/INT external interrupt did not occur
+	*
+	* bit 0     RBIF: RB Port Change Interrupt Flag bit
+	*           A mismatch condition will continue to set flag bit RBIF. Reading
+	*           PORTB will end the mismatch condition and allow the flag bit
+	*           RBIF to be cleared.
+	*           1 = At least one of the RB7:RB4 pins changed state (must be
+	*               cleared in software)
+	*           0 = None of the RB7:RB4 pins have changed state.
+	**************************************************************************/
+    //intcon.PEIE = 1;     	//enable peripheral interrupts
+    //intcon.TMR0IE = 1;     //enable TMR0 overflow bit    
+	intcon.INTE = 1;		//enable RB0/INT Interrupt
+01A6  160B  	BSF gbl_intcon,4
+
+	//intcon.RBIE = 1;		//enable PortB change Interrupt 
+    intcon.GIE = 1;     	//enable global interrupts
+01A7  178B  	BSF gbl_intcon,7
+
+    
+    /**************************************************************************
+	* PIE1: PERIPHERAL INTERRUPT ENABLE REGISTER 1
+	*
+	* bit 7     Unimplemented:
+	*
+	* bit 6     ADIE: A/D Converter Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 5     RCIE: USART Receive Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 4     TXIE: USART Transmit Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 3     SSPIE: Synchronous Serial Port (SSP) Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 2     CCP1IE: CCP1 Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 1     TMR2IE: TMR2 to PR2 Match Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	*
+	* bit 0     TMR1IE: TMR1 Overflow Interrupt Enable bit
+	*           1 = Enabled
+	*           0 = Disabled
+	**************************************************************************/
+	//pie1.ADIE = 1;         	//enable ADC interrupt
+	
+	/**************************************************************************
+	* PIR1: PERIPHERAL INTERRUPT STATUS REGISTER 1
+	*
+	* bit 7     Unimplemented:
+	*
+	* bit 6     ADIF: A/D Converter Interrupt Flag bit
+	*           1 = A/D conversion completed (must be cleared in software)
+	*           0 = A/D conversion is not complete
+	*
+	* bit 5     RCIF: USART Receive Interrupt Flag bit
+	*           1 = The USART receive buffer is full (cleared by reading RCREG)
+	*           0 = The USART receive buffer is not full
+	*
+	* bit 4     TXIF: USART Transmit Interrupt Flag bit
+	*           1 = The USART transmit buffer is empty (cleared by writing to
+	*               TXREG)
+	*           0 = The USART transmit buffer is not empty
+	*
+	* bit 3     SSPIF: Synchronous Serial Port (SSP) Interrupt Flag bit
+	*           1 = The transmission/reception is complete (must be cleared in
+	*               software)
+	*           0 = Waiting to transmit/receive
+	*
+	* bit 2     CCP1IF: CCP1 Interrupt Flag bit
+	*           Capture Mode
+	*           1 = A TMR1 register capture occurred (must be cleared in
+	*               software)
+	*           0 = No TMR1 register capture occurred
+	*           Compare Mode
+	*           1 = A TMR1 register compare match occurred (must be cleared in
+	*               software)
+	*           0 = No TMR1 register ccompare match occurred
+	*
+	* bit 1     TMR2IF: TMR2 to PR2 Match Interrupt Flag bit
+	*           1 = A TMR2 to PR2 match occurred (must be cleared in software)
+	*           0 = No TMR2 to PR2 match occurred
+	*
+	* bit 0     TMR1IF: TMR1 Overflow Interrupt Flag bit
+	*           1 = The TMR1 register overflowed (must be cleared in software)
+	*           0 = The TMR1 register did not overflow
+	**************************************************************************/
+	//pir1.ADIF = 0;        	//clear ADC flag
+	
+	// configure the RF
+	//rfm12_Init_433();
+	rfm12_Init_915();			// I have a 915Mhz installed
+01A8  215B  	CALL rfm12_Init_00012
+
+	rfm12_SetBaud(BAUD);		
+01A9  3080  	MOVLW 0x80
+01AA  00F1  	MOVWF rfm12_SetB_00013_arg_baud
+01AB  3025  	MOVLW 0x25
+01AC  00F2  	MOVWF rfm12_SetB_00013_arg_baud+D'1'
+01AD  2117  	CALL rfm12_SetB_00013
+
+	rfm12_SetFreq(FREQ);  		// set frequency
+01AE  30D0  	MOVLW 0xD0
+01AF  00F1  	MOVWF rfm12_SetF_00015_arg_freq
+01B0  3007  	MOVLW 0x07
+01B1  00F2  	MOVWF rfm12_SetF_00015_arg_freq+D'1'
+01B2  20F8  	CALL rfm12_SetF_00015
+
+	//WriteCMD(0xA7D0);			// 915Mhz
+	
+}
+01B3  0008  	RETURN
+
+
+
+/******************************************************************
+* rfm12.c
+*
+* HopeRf RFM12 FSK Wireless Module Library
+*
+* Copyright (c) 2007 Stephen Eaton
+* 	seaton@everythingrobotics.com
+*
+* ===========================================================
+* License:
+*
+*   GPLv3 http://www.gpl.org/ 
+*
+* ===========================================================
+******************************************************************/
+
+#include <system.h>
+#include "rfm12.h"
+#include "..\common.h"
+
+// Declaration of local variables.
+
+/*
+ The buffer is used for transmitting and receiving
+ */
+//static uchar buffer[32];
+//static uchar txrx_pointer;
+//static uchar txrx_counter;
+
+// Global variable to this function, contains all the settings
+rfm12_t rfm12_conf;
+
+
+
+// function Declarations
+uint WriteCMD( uint cmd);
+uchar spi_write_sw(uchar cmd);
+
+void Write0(void);
+void Write1(void);
+void Init(void);
+void rfm12_Basic_Config();				// basic config for the RFM12
+
+//	state machine
+void goto_poweringtransmitter_state(void);
+void goto_transmitting_state(void);
+void goto_receiving_state(void);
+void goto_quiettime_state(void);
+
+
+//
+// Initialiazes the RFM Module to default settings
+void Init(void)
+
+{
+	
+	// Define Module control Pins
+	
+	// outputs
+	RFM12_SEL_OUT();							// Module Chip Select 
+00D5  1683  	BSF STATUS, RP0
+00D6  1303  	BCF STATUS, RP1
+00D7  1105  	BCF gbl_RFM12_SEL_TRIS,2
+
+	HI_SEL();									// RF CS is Active Low so set High
+00D8  1283  	BCF STATUS, RP0
+00D9  1505  	BSF gbl_RFM12_SEL,2
+
+	
+	SCK_OUT();									// SPI SCK as Output
+00DA  1683  	BSF STATUS, RP0
+00DB  1185  	BCF gbl_SCK_TRIS,3
+
+	LOW_SCK();
+00DC  1283  	BCF STATUS, RP0
+00DD  1185  	BCF gbl_SCK,3
+
+	
+	SDO_OUT();									// SPI SDO as Output
+00DE  1683  	BSF STATUS, RP0
+00DF  1086  	BCF gbl_SDO_TRIS,1
+
+	LOW_SDO();
+00E0  1283  	BCF STATUS, RP0
+00E1  1086  	BCF gbl_SDO,1
+
+		
+	// inputs
+	RFM12_IRQ_IN();								// nIRQ
+00E2  1683  	BSF STATUS, RP0
+00E3  1406  	BSF gbl_RFM12_IRQ_TRIS,0
+
+	SDI_IN();									// SPI SDI
+00E4  1485  	BSF gbl_SDI_TRIS,1
+
+	
+	// reset buffer pointers
+	rfm12_conf.txrx_pointer = 0;
+00E5  1283  	BCF STATUS, RP0
+00E6  01C2  	CLRF gbl_rfm12_conf+D'34'
+
+	
+	delay_ms(200);								// wait for RFM12 POR
+00E7  30C8  	MOVLW 0xC8
+00E8  00F1  	MOVWF delay_ms_00000_arg_del
+00E9  2010  	CALL delay_ms_00000
+
+	
+	// initialiase state machine
+	//goto_poweringtransmitter_state();
+}
+00EA  0008  	RETURN
+
+
+/*
+	Initialiase RFM12 to 915Mhz Band with basic config
+ */
+void rfm12_Init_915(void)
+
+{
+	Init();										// setup Module I/O
+015B  20D5  	CALL Init_00000
+
+	//RFM12 - Configuration Command
+	//el : Enable TX register = 1
+	//ef : Enable RX FIFO buffer = 1
+	//Select 915 MHz band
+	//Select 12.0 pF crystal load capacitor
+	WriteCMD(RFM12_CMD_CONFIG | RFM12_BAND_915 | RFM12_CAP_120| RFM12_CONFIG_EF | RFM12_CONFIG_EL); 	
+015C  30F7  	MOVLW 0xF7
+015D  00FB  	MOVWF WriteCMD_00000_arg_CMD
+015E  3080  	MOVLW 0x80
+015F  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0160  2024  	CALL WriteCMD_00000
+
+	//WriteCMD(0x80F4);
+	
+	rfm12_Basic_Config();						// Basic config
+0161  204D  	CALL rfm12_Basi_00028
+
+	goto_quiettime_state();
+0162  206F  	CALL goto_quiet_00029
+
+}
+0163  0008  	RETURN
+
+
+
+/*
+	Initialiase RFM12 to 433Mhz Band with basic config
+ */
+void rfm12_Init_433(void)
+{
+	Init();										// setup Module I/O
+	
+	//RFM12 - Configuration Command
+	//el : Enable TX register = 1
+	//ef : Enable RX FIFO buffer = 1
+	//Select 433 MHz band
+	//Select 12.0 pF crystal load capacitor
+	WriteCMD(RFM12_CMD_CONFIG | RFM12_BAND_433 | RFM12_CAP_120| RFM12_CONFIG_EF | RFM12_CONFIG_EL); 	
+	
+	rfm12_Basic_Config();						// Basic config
+	
+	goto_quiettime_state();
+}
+
+
+/*
+ configures the RFM12 with a basic working config 
+*/
+void rfm12_Basic_Config(void)
+
+{
+	
+		
+	//RFM12 - Receiver Control Command
+	//p16 : 0=INTin, 1=VDIout = 1
+	//VDI response time = Med
+	//Receiver bandwidth = 134 kHz
+	//LNA gain = 0 dB
+	//RSSI threshold = -103 dBm
+	WriteCMD(RFM12_CMD_RXCTL | RFM12_RXCTL_P16 | RFM12_RXCTL_VDI_MED | RFM12_RXCTL_LNA_0 | RFM12_RXCTL_BW_134 | RFM12_RXCTL_RSSI_103);			
+004D  30A0  	MOVLW 0xA0
+004E  00FB  	MOVWF WriteCMD_00000_arg_CMD
+004F  3095  	MOVLW 0x95
+0050  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0051  2024  	CALL WriteCMD_00000
+
+	
+	
+	//RFM12 - Datafilter Command
+	//al : Clock recovery auto lock = 1
+	//ml : Clock recovery lock control = 0
+	//s : 0=digital, 1=analog filter = 0
+	//DQD threshold = 4
+	//C2AC
+	WriteCMD(RFM12_CMD_FILTER | RFM12_FILTER_AL | 0x04);
+0052  30AC  	MOVLW 0xAC
+0053  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0054  30C2  	MOVLW 0xC2
+0055  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0056  2024  	CALL WriteCMD_00000
+
+	//WriteCMD(0xC2AC);
+	
+	//RFM12 - Wake-Up Timer Command
+	//T wakeup = 0 ms
+	WriteCMD(RFM12_CMD_WAKEUP);			// disable wakeuptimer
+0057  01FB  	CLRF WriteCMD_00000_arg_CMD
+0058  30E0  	MOVLW 0xE0
+0059  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+005A  2024  	CALL WriteCMD_00000
+
+	
+	//RFM12 - Low Duty-Cycle Command
+	//en : Enable low duty-cycle = 0
+	//Duty-cycle = N/A
+	WriteCMD(RFM12_CMD_DUTYCYCLE);			// disable low duty cycle
+005B  01FB  	CLRF WriteCMD_00000_arg_CMD
+005C  30C8  	MOVLW 0xC8
+005D  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+005E  2024  	CALL WriteCMD_00000
+
+	
+	//RFM12 - AFC Command
+	//AFC automatic mode = Offset VDI=h
+	//st : Strobe edge = 1
+	//fi : Fine mode = 0
+	//oe : Offset register enable = 1
+	//en : Calculate offset = 1
+	//Range limit = +15fres to -16fres
+	//Max. Deviation = +112.5kHz to -120kHz
+	//C49b
+	WriteCMD(RFM12_CMD_AFC | RFM12_AFC_ST |RFM12_AFC_FI| RFM12_AFC_OE | RFM12_AFC_EN | RFM12_AFC_LIMIT_8 | RFM12_AFC_AUTO_ONCE );			// AFC settings: autotuning: -10kHz...+7,5kHz
+005F  304F  	MOVLW 0x4F
+0060  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0061  30C4  	MOVLW 0xC4
+0062  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0063  2024  	CALL WriteCMD_00000
+
+	//WriteCMD(0xc49b);
+	
+	//RFM12 - TX Configuration Command
+	//mp = 0
+	//Delta f (fsk) = 60 kHz
+	//Output power = 0 dB
+	WriteCMD(RFM12_CMD_TXCTL | RFM12_TXCTL_POWER_0 | RFM12_TXCTL_MODULATION_60 );
+0064  3003  	MOVLW 0x03
+0065  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0066  3098  	MOVLW 0x98
+0067  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0068  2024  	CALL WriteCMD_00000
+
+	//	WriteCMD(0x9850); 
+	
+	//RFM12 - LB Det./Clock Div. Command
+	//Vlb = 2.2 V
+	//Clock output = 10 MHz
+	//C0E0
+	WriteCMD(RFM12_CMD_LOWBAT_CLK | RFM12_XTAL_1000 | RFM12_LOWBAT_22);			// CLK: 10MHz, 2.2V	
+0069  30E0  	MOVLW 0xE0
+006A  00FB  	MOVWF WriteCMD_00000_arg_CMD
+006B  30C0  	MOVLW 0xC0
+006C  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+006D  2024  	CALL WriteCMD_00000
+
+	
+	//rfm12_conf.status = WriteCMD(RFM12_CMD_STATUS_READ);
+}
+006E  0008  	RETURN
+
+
+
+/*
+	Sets the RF Baud Rate
+	must be the same at both ends i.e. Tx and Rx
+	
+	parameters:
+		baud: baudrate in bps  e.g. 19200 or 2400
+*/
+void rfm12_SetBaud(uint baud)
+
+{
+	if(baud<664)
+0117  3002  	MOVLW 0x02
+0118  0272  	SUBWF rfm12_SetB_00013_arg_baud+D'1', W
+0119  1D03  	BTFSS STATUS,Z
+011A  291D  	GOTO	label17
+011B  3098  	MOVLW 0x98
+011C  0271  	SUBWF rfm12_SetB_00013_arg_baud, W
+011D        label17
+011D  1803  	BTFSC STATUS,C
+011E  2923  	GOTO	label18
+0123        label18
+
+		baud = 664;						// min allowed baudrate
+011F  3098  	MOVLW 0x98
+0120  00F1  	MOVWF rfm12_SetB_00013_arg_baud
+0121  3002  	MOVLW 0x02
+0122  00F2  	MOVWF rfm12_SetB_00013_arg_baud+D'1'
+
+	if(baud<5400)						// 344827.58621 / (1 + cs*7) / (baud-1)
+0123  3015  	MOVLW 0x15
+0124  0272  	SUBWF rfm12_SetB_00013_arg_baud+D'1', W
+0125  1D03  	BTFSS STATUS,Z
+0126  2929  	GOTO	label19
+0127  3018  	MOVLW 0x18
+0128  0271  	SUBWF rfm12_SetB_00013_arg_baud, W
+0129        label19
+0129  1803  	BTFSC STATUS,C
+012A  2940  	GOTO	label20
+0140        label20
+
+		WriteCMD(RFM12_CMD_DATARATE | RFM12_BITRATE_CS | (43104/baud));  //CS=1 (344828/8)/baud-1
+012B  3060  	MOVLW 0x60
+012C  00F3  	MOVWF __div_16_1_00003_arg_a
+012D  30A8  	MOVLW 0xA8
+012E  00F4  	MOVWF __div_16_1_00003_arg_a+D'1'
+012F  0871  	MOVF rfm12_SetB_00013_arg_baud, W
+0130  00F5  	MOVWF __div_16_1_00003_arg_b
+0131  0872  	MOVF rfm12_SetB_00013_arg_baud+D'1', W
+0132  00F6  	MOVWF __div_16_1_00003_arg_b+D'1'
+0133  20B4  	CALL __div_16_1_00003
+0134  0821  	MOVF CompTempVarRet167, W
+0135  00F9  	MOVWF CompTempVar618
+0136  0822  	MOVF CompTempVarRet167+D'1', W
+0137  00FA  	MOVWF CompTempVar619
+0138  0879  	MOVF CompTempVar618, W
+0139  3880  	IORLW 0x80
+013A  00FB  	MOVWF WriteCMD_00000_arg_CMD
+013B  087A  	MOVF CompTempVar619, W
+013C  38C6  	IORLW 0xC6
+013D  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+013E  2024  	CALL WriteCMD_00000
+
+	else
+		WriteCMD(RFM12_CMD_DATARATE |(344828/baud)); //CS=0 344828/Baud-1
+0140  30FC  	MOVLW 0xFC
+0141  00F3  	MOVWF __div_32_3_00001_arg_a
+0142  3042  	MOVLW 0x42
+0143  00F4  	MOVWF __div_32_3_00001_arg_a+D'1'
+0144  3005  	MOVLW 0x05
+0145  00F5  	MOVWF __div_32_3_00001_arg_a+D'2'
+0146  3000  	MOVLW 0x00
+0147  00F6  	MOVWF __div_32_3_00001_arg_a+D'3'
+0148  0871  	MOVF rfm12_SetB_00013_arg_baud, W
+0149  00F7  	MOVWF __div_32_3_00001_arg_b
+014A  0872  	MOVF rfm12_SetB_00013_arg_baud+D'1', W
+014B  00F8  	MOVWF __div_32_3_00001_arg_b+D'1'
+014C  01F9  	CLRF __div_32_3_00001_arg_b+D'2'
+014D  01FA  	CLRF __div_32_3_00001_arg_b+D'3'
+014E  2079  	CALL __div_32_3_00001
+014F  0825  	MOVF CompTempVarRet163, W
+0150  00FD  	MOVWF CompTempVar626
+0151  0826  	MOVF CompTempVarRet163+D'1', W
+0152  00FE  	MOVWF CompTempVar627
+0153  087D  	MOVF CompTempVar626, W
+0154  3800  	IORLW 0x00
+0155  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0156  087E  	MOVF CompTempVar627, W
+0157  38C6  	IORLW 0xC6
+0158  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0159  2024  	CALL WriteCMD_00000
+
+		
+}
+013F  0008  	RETURN
+015A  0008  	RETURN
+
+
+/*
+	Sets the Tx Power and Modulation
+*/
+void rfm12_SetPower(uchar power, uchar modulation)
+{
+	WriteCMD(RFM12_CMD_TXCTL | power | modulation );
+}
+
+/*
+	Sets the RF frequency of the RFM12
+	
+	Parameters
+		freq: Centre Frequency bit value
+		
+		the bit value can be calculaed by:
+		
+		433MHz(FREQ-430)/0.0025  where FREQ is centre frequency in MHz
+		915MHz(FREQ-900)/0.0075  where FREQ is centre frequency in MHz
+		
+		or use the helper macros to calculate the register bit value 
+		
+			RFM12_FREQ_433(FREQ)
+			RFM12_FREQ_915(FREQ)
+		
+		e.g. rfm12_SetFrequency(RFM12_FREQ_915(921.25));
+		this sets the frequency to 921.25MHz
+*/
+void rfm12_SetFreq(uint freq)
+
+{
+	if (freq<0x60)				// lower limit 430.2400MHz or 900.72MHZ
+00F8  3060  	MOVLW 0x60
+00F9  0271  	SUBWF rfm12_SetF_00015_arg_freq, W
+00FA  0872  	MOVF rfm12_SetF_00015_arg_freq+D'1', W
+00FB  1803  	BTFSC STATUS,C
+00FC  2903  	GOTO	label14
+00FD  1D03  	BTFSS STATUS,Z
+00FE  2903  	GOTO	label14
+0103        label14
+
+		freq=0x60;
+00FF  3060  	MOVLW 0x60
+0100  00F1  	MOVWF rfm12_SetF_00015_arg_freq
+0101  01F2  	CLRF rfm12_SetF_00015_arg_freq+D'1'
+
+	else if (freq> 0xF3F)		// upper limit 439.7575MHz or 929.2725MHz
+0102  290F  	GOTO	label16
+0103  0872  	MOVF rfm12_SetF_00015_arg_freq+D'1', W
+0104  3C0F  	SUBLW 0x0F
+0105  1D03  	BTFSS STATUS,Z
+0106  2909  	GOTO	label15
+0107  0871  	MOVF rfm12_SetF_00015_arg_freq, W
+0108  3C3F  	SUBLW 0x3F
+0109        label15
+0109  1803  	BTFSC STATUS,C
+010A  290F  	GOTO	label16
+010F        label16
+
+		freq=0xF3F;
+010B  303F  	MOVLW 0x3F
+010C  00F1  	MOVWF rfm12_SetF_00015_arg_freq
+010D  300F  	MOVLW 0x0F
+010E  00F2  	MOVWF rfm12_SetF_00015_arg_freq+D'1'
+
+	
+	WriteCMD(RFM12_CMD_FREQ | freq);
+010F  0871  	MOVF rfm12_SetF_00015_arg_freq, W
+0110  3800  	IORLW 0x00
+0111  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0112  0872  	MOVF rfm12_SetF_00015_arg_freq+D'1', W
+0113  38A0  	IORLW 0xA0
+0114  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0115  2024  	CALL WriteCMD_00000
+
+}
+0116  0008  	RETURN
+
+
+/*
+
+  Write a Command to the RFM Module using SPI
+  
+  Requires: 16bit valid command
+  Returns:  16bit result from transaction
+  
+  This is a bi-directional transfer.  
+  A command is clocked out to the RFM a bit at a time.  
+  At the same time a result is clocked back in a bit at a time.
+  
+  I've optimise this as much as possible and removed all the nops()
+  
+  I've tried to get the RFM12 to accept commands by writing out x2 8 bit values but does not seem to like the deley between the 2 bytes
+  It does work by writing out a single 16bit word and this is implemented below.  
+  
+  The issue appears to be the delay in the CLK. To get this working on hardware SPI the x2 bytes need to functions and is a TODO:
+   
+   Assumes on Entry:
+	SEL=1
+	SCK=0
+	SDO=any
+
+   On Exit:
+	SEL=1
+	SCK=0
+	SDO=any
+*/
+uint WriteCMD(uint CMD)
+
+{	
+	uint RESULT = 0;							// Holds the received SDI
+0024  01FD  	CLRF WriteCMD_00000_1_RESULT
+0025  01FE  	CLRF WriteCMD_00000_1_RESULT+D'1'
+
+	uchar n=16;									// number of bits in SPI Command we need to send
+0026  3010  	MOVLW 0x10
+0027  1683  	BSF STATUS, RP0
+0028  1303  	BCF STATUS, RP1
+0029  00A0  	MOVWF WriteCMD_00000_1_n
+
+	LOW_SEL();									// CS LOW
+002A  1283  	BCF STATUS, RP0
+002B  1105  	BCF gbl_RFM12_SEL,2
+
+	while(n--)									// Send All 16 Bits MSB First
+002C        label3
+002C  1683  	BSF STATUS, RP0
+002D  0820  	MOVF WriteCMD_00000_1_n, W
+002E  00A1  	MOVWF CompTempVar615
+002F  03A0  	DECF WriteCMD_00000_1_n, F
+0030  08A1  	MOVF CompTempVar615, F
+0031  1903  	BTFSC STATUS,Z
+0032  2845  	GOTO	label6
+0044  282C  	GOTO	label3
+0045        label6
+
+	{
+		if (CMD&0x8000)							// Check MSB to see if 1 or 0
+0033  1FFC  	BTFSS WriteCMD_00000_arg_CMD+D'1',7
+0034  2838  	GOTO	label4
+0038        label4
+
+			HI_SDO();							// Write 1 via SDI
+0035  1283  	BCF STATUS, RP0
+0036  1486  	BSF gbl_SDO,1
+
+		else
+0037  283A  	GOTO	label5
+003A        label5
+
+			LOW_SDO();							// Write 0 via SPI
+0038  1283  	BCF STATUS, RP0
+0039  1086  	BCF gbl_SDO,1
+
+			
+		HI_SCK();								// clock out bit via SPI
+003A  1585  	BSF gbl_SCK,3
+
+		RESULT<<=1;								// Shift left for next bit to receive
+003B  1003  	BCF STATUS,C
+003C  0DFD  	RLF WriteCMD_00000_1_RESULT, F
+003D  0DFE  	RLF WriteCMD_00000_1_RESULT+D'1', F
+
+		if(SDI==1)								// Check if we received a high on SDI
+003E  1885  	BTFSC gbl_SDI,1
+
+			RESULT |= 0x0001;					// RESULT LSB = 1		
+003F  147D  	BSF WriteCMD_00000_1_RESULT,0
+
+		CMD<<=1;								// Shift left for next bit to send
+0040  1003  	BCF STATUS,C
+0041  0DFB  	RLF WriteCMD_00000_arg_CMD, F
+0042  0DFC  	RLF WriteCMD_00000_arg_CMD+D'1', F
+
+		LOW_SCK();
+0043  1185  	BCF gbl_SCK,3
+
+	}
+
+	HI_SEL();									// CS HIGH - Finished Sending Command
+0045  1283  	BCF STATUS, RP0
+0046  1505  	BSF gbl_RFM12_SEL,2
+
+	return RESULT;
+0047  087D  	MOVF WriteCMD_00000_1_RESULT, W
+0048  1683  	BSF STATUS, RP0
+0049  00A2  	MOVWF CompTempVarRet614
+004A  087E  	MOVF WriteCMD_00000_1_RESULT+D'1', W
+004B  00A3  	MOVWF CompTempVarRet614+D'1'
+
+}
+004C  0008  	RETURN
+
+
+/*
+	Writes a byte to spi via software 
+	
+	NOTE: this is currently not working see WriteCMD comments for issue
+	
+	Assumes on entry:
+		SCK=0
+		SEL=0
+		SDO=any
+	On Exit:
+		SCK=0
+		SDO=any
+		SEL=0
+*/
+uchar spi_write_sw(uchar cmd)
+{
+	uchar result = 0, i;				
+	for (i=0; i<8; i++)
+	{
+		if(cmd & 0x80)				//check MSB to see if we write 1 or 0 via SDO
+			HI_SDO();				// Write 1
+		else
+			LOW_SDO();				// Write 0
+		HI_SCK();					// Clock out bit via SPI;
+		result<<=1;					// check result
+		if (SDI==1)					
+			result |= 0x01;		
+		cmd <<= 1;					// next bit
+		LOW_SCK();
+	} 
+	return result;
+}
+
+
+/*
+	Turns on the Transmitter
+*/
+void rfm12_EnableTx(void)
+
+{
+	goto_transmitting_state();
+0195  2164  	CALL goto_trans_0002A
+
+}
+0196  0008  	RETURN
+
+
+void rfm12_DisableTx(void)
+
+{
+	goto_quiettime_state();
+0199  206F  	CALL goto_quiet_00029
+
+}
+019A  0008  	RETURN
+
+
+void rfm12_EnableRx(void)
+
+{	
+	goto_receiving_state();
+0193  216E  	CALL goto_recei_0002B
+
+}
+0194  0008  	RETURN
+
+
+void rfm12_DisableRx(void)
+
+{
+	goto_quiettime_state();
+0197  206F  	CALL goto_quiet_00029
+
+}
+0198  0008  	RETURN
+
+
+
+/*
+ Handles the interrupt generated by the nIRQ of the RFM12 
+ 
+ This routine should be used as a callback from the main application 
+ interrupt routine.
+ 
+ If we get here then its for one of the following reasons:
+ 
+	 (in bit order as clocked out as status bit)
+	  /RGIT - TX Register Ready to receive the next byte(Cleared by Transmit Write)
+	  \FFIT - RX FIFO has reached preprogrammed limit	(Cleared by any FIFO Read)
+	  POR  - Power-on reset occurred					(cleared on status read)
+	  /RGUR - TX Register underrun, register overwrite	(cleared on status read)
+	  \FFOV - RX FIFO Overflow							(cleared on status read)
+	  WKUP - Wakeup Timer overflow   					(cleared on status read)
+	  EXT  - LOW on External Pin 16
+	  LBD  - Low battery detected, powersupply is below the preprogrammed threshold
+ */
+void rfm12_Handle_Interrupt(void)
+{
+	rfm12_conf.status = WriteCMD(RFM12_CMD_STATUS_READ);	// Updates the config data with lastest Status
+
+	if(rfm12_conf.status & isRGITFFIT) 				// Check if ready to Rx or Tx byte
+	{
+		switch (rfm12_conf.state)				// Check Tx or Rx
+		{
+			case RFM12_STATE_RECEIVING:
+					//TODO:							// handle Rx Interrupt
+					break;
+						
+			case RFM12_STATE_TRANSMITTING:
+					//TODO:							// handle Tx interrupt
+					break;
+		}
+		
+	}
+	
+	if(rfm12_conf.status & isPOR)	// Check Power on reset
+	{
+			//TODO: handle POR
+	}
+	
+	if(rfm12_conf.status & isRGURFFOV)  // Check RGUR /Check FFOV status bit
+	{
+		switch (rfm12_conf.state)				// Check Tx or Rx
+		{
+			case RFM12_STATE_RECEIVING:
+					//TODO:								// handle Rx Interrupt
+					break;
+						
+			case RFM12_STATE_TRANSMITTING:
+					//TODO:								// handle Tx interrupt
+					break;
+		}
+	}
+	
+	if(rfm12_conf.status & isWKUP)	// Check Wakeup status bit
+	{
+			//TODO: handle Wakeup
+	}
+	
+	if(rfm12_conf.status & isEXT)	// Check EXT Interrupt status bit
+	{
+			//TODO: handle External
+	}
+	
+	if(rfm12_conf.status & isLBD)	// Check Low battery status bit
+	{
+			//TODO: handle Low Battery
+	}
+}
+
+
+
+/* 
+  Waits for RFM 12 to become ready by checking first bit of status register
+  Before we can Tx or Rx data the RFM12 needs to be ready, 
+  i.e. not in the middle of transmitting a previous byte
+  
+  This function is blocking and will only return when it is ready to Tx or Rx
+  
+  Assumes:
+	SCK=0 on entry
+	SEL=1
+	SDO=any
+	
+  On Exit:
+	SCK=0
+	SDO=0
+	SEL=1
+*/
+void rfm12_WaitReady(void)
+
+{	
+//#ifdef DEBUG							// always return for simulator
+		//return;
+//#endif
+
+	bit READY = 0;
+00EB  1072  	BCF rfm12_Wait_0001C_1_READY,0
+
+	while(READY==0)						
+00EC        label13
+00EC  1872  	BTFSC rfm12_Wait_0001C_1_READY,0
+00F7  28EC  	GOTO	label13
+
+	{
+		LOW_SEL();						// CS LOW						
+00EE  1283  	BCF STATUS, RP0
+00EF  1303  	BCF STATUS, RP1
+00F0  1105  	BCF gbl_RFM12_SEL,2
+
+		LOW_SDO();						// write a 0 i.e. start of status command
+00F1  1086  	BCF gbl_SDO,1
+
+		HI_SCK();
+00F2  1585  	BSF gbl_SCK,3
+
+		if(SDI==1)						// check RGIT bit of status (first bit)
+00F3  1885  	BTFSC gbl_SDI,1
+
+		{ 								// If HIGH then Tx/RX is ready to accept the next byte
+			READY = 1;
+00F4  1472  	BSF rfm12_Wait_0001C_1_READY,0
+
+		}	
+		LOW_SCK();						// SCK LOW
+00F5  1185  	BCF gbl_SCK,3
+
+		HI_SEL();						// CS HIGH - Finished Sending Command
+00F6  1505  	BSF gbl_RFM12_SEL,2
+
+	}
+}
+00ED  0008  	RETURN
+
+
+/* 
+  Waits for RFM12 to become ready by checking first bit of status register
+  Before we can Tx or Rx data the RFM12 needs to be ready, 
+  i.e. not in the middle of transmitting or receiving 
+  
+  This will return after a set amount of time
+  
+  Returns:  0 = Not ready/Timeout
+			1 = Ready
+*/
+uchar rfm12_isReady(void)
+{	
+/*#ifdef DEBUG
+	return 1;							// always return true for debug
+#endif
+	*/
+	bit READY = 0;
+	uchar timeout = 1000;
+	//LOW_SCK();	
+	while((READY==0) && (timeout!=0))
+	{
+		LOW_SEL();						// !cs LOW - enable
+		LOW_SDO();						// clock out a 0 - status command request
+		HI_SCK();						// SCK HIGH 
+		if(SDI==1)						// check RGIT bit of status (first bit)
+		{ 								// If HIGH then Tx/RX is ready to accept the next byte
+			READY = 1;
+		}
+		timeout--;						// check time		
+		LOW_SCK();						// SCK LOW
+		HI_SEL();						// !cs HIGH - disable
+	}
+	
+	if(timeout==0)
+		return 0;						// Not Ready - timeout
+	else
+		return 1;						// Ready
+}
+
+
+/*
+	loads a byte into the tx buffer
+ */
+void rfm12_Load_Byte(uchar data)
+{
+	rfm12_conf.buffer[rfm12_conf.txrx_pointer] = data;
+	rfm12_conf.txrx_pointer++;
+}
+
+/*
+	Reads and returns data from the FIFO of rfm12
+ */
+uchar rfm12_ReadFifo(void)
+
+{
+	rfm12_WaitReady();								// wait until byte is received
+018B  20EB  	CALL rfm12_Wait_0001C
+
+	return WriteCMD(RFM12_CMD_FIFOREAD) & 0xFF;		// return the contents of fifo
+018C  01FB  	CLRF WriteCMD_00000_arg_CMD
+018D  30B0  	MOVLW 0xB0
+018E  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+018F  2024  	CALL WriteCMD_00000
+0190  0822  	MOVF CompTempVarRet614, W
+0191  00F1  	MOVWF CompTempVarRet656
+
+}
+0192  0008  	RETURN
+
+
+/*
+	Sets the bandwidth, gain and drssi for the Receiver
+*/
+void rfm12_SetBandwidth(uchar bandwidth, uchar gain, uchar drssi)
+{
+	WriteCMD(RFM12_CMD_RXCTL | bandwidth | gain | drssi); // P16 enabled
+}
+	
+
+/*
+  Sends the tx buffer
+
+  Blocking - will not return until all bytes sent
+  
+  Assumes that RF is enabled
+  
+*/
+void rfm12_Tx_Buffer(void)
+{
+	rfm12_conf.txrx_counter = rfm12_conf.txrx_pointer;
+	rfm12_conf.txrx_pointer = 0;
+	
+	if(rfm12_conf.txrx_counter==0)					// nothing to send so exit
+		return;		
+	
+	while(rfm12_conf.txrx_counter != 0);			// tx until the buffer is empty
+	{
+		rfm12_Tx_Byte(rfm12_conf.buffer[rfm12_conf.txrx_pointer++]);
+		rfm12_conf.txrx_counter--;
+	}
+	
+	rfm12_conf.txrx_pointer=0;						// reset the buffer
+}
+
+/*
+	Receives RF data into buffer
+	parameter:
+		count = number of bytes to receive
+ */
+void rfm12_Rx_Data(uchar count)
+{
+
+	rfm12_conf.txrx_counter = count;
+	rfm12_conf.txrx_pointer = 0;
+	
+	if(rfm12_conf.txrx_counter==0)					// nothing to receive so exit
+		return;		
+	
+	while(rfm12_conf.txrx_counter != 0);			// rx until the we reach the count
+	{
+		rfm12_conf.buffer[rfm12_conf.txrx_pointer++]=rfm12_ReadFifo();  // get data from RFM12 fifo
+		rfm12_conf.txrx_counter--;
+	}
+	
+	rfm12_conf.txrx_pointer=0;							// reset the buffer
+}
+ 	
+/*
+	Resets the FIFO on the RFM12 and enabled interrupt at 8 bits
+*/
+void rfm12_ResetFifo(void)
+
+{
+	WriteCMD(RFM12_CMD_FIFORESET | RFM12_FIFORESET_DR); 					// disable FIFO
+0180  3001  	MOVLW 0x01
+0181  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0182  30CA  	MOVLW 0xCA
+0183  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0184  2024  	CALL WriteCMD_00000
+
+	WriteCMD(RFM12_CMD_FIFORESET | RFM12_FIFORESET_DR | RFM12_FIFORESET_FF | 0x80 );// Enable FIFO and ready to receive next Byte
+0185  3083  	MOVLW 0x83
+0186  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0187  30CA  	MOVLW 0xCA
+0188  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0189  2024  	CALL WriteCMD_00000
+
+}
+018A  0008  	RETURN
+
+
+// resets the txrx buffer
+void rfm12_Init_Buffer(void)
+{
+	rfm12_conf.txrx_pointer = 0;
+	return;
+}
+
+/*
+  Transmits a single byte via RF Transmitter
+ 
+	Blocking - will not return until byte transmitted
+
+	assumes: el bit (bit 7) is set in config register
+	assumes: er bit (bit 8) is cleared pwr mgmt register
+	assumes: et bit (bit 5) is set in pwr mgmt register
+ */
+void rfm12_Tx_Byte(uchar data)
+
+{
+	rfm12_WaitReady();			 	// Wait until RFM is ready to Tx
+0178  20EB  	CALL rfm12_Wait_0001C
+
+	WriteCMD(RFM12_CMD_TX | data);
+0179  0871  	MOVF rfm12_Tx_B_00020_arg_data, W
+017A  3800  	IORLW 0x00
+017B  00FB  	MOVWF WriteCMD_00000_arg_CMD
+017C  30B8  	MOVLW 0xB8
+017D  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+017E  2024  	CALL WriteCMD_00000
+
+	//LOW_SEL();
+	//spi_write_sw(0xB0);
+	//spi_write_sw(data);
+	//HI_SEL();
+}
+017F  0008  	RETURN
+
+
+/*******************************************************************************
+ * State machine
+ ******************************************************************************/
+ 
+/*
+	transmitting state
+*/
+void goto_transmitting_state(void)
+
+{
+	rfm12_conf.state = RFM12_STATE_TRANSMITTING;
+0164  3002  	MOVLW 0x02
+0165  1283  	BCF STATUS, RP0
+0166  1303  	BCF STATUS, RP1
+0167  00A0  	MOVWF gbl_rfm12_conf
+
+
+	//RFM12 - Power Management Command
+	//er : Enable receiver chain = 0
+	//ebb : Enable baseband = 0
+	//et : Enable PLL,PA, TX = 1  - auto turn on TX chain
+	//es : Enable synthesizer = 0
+	//ex : Enable crystal oscillator = 0
+	//eb : Enable low battery detector = 0
+	//ew : Enable wake-up timer = 0
+	//dc : Disable clock output = 0
+	WriteCMD(RFM12_CMD_PWRMGT | RFM12_PWRMGT_ET);			
+0168  3020  	MOVLW 0x20
+0169  00FB  	MOVWF WriteCMD_00000_arg_CMD
+016A  3082  	MOVLW 0x82
+016B  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+016C  2024  	CALL WriteCMD_00000
+
+	
+	//WriteCMD(0x8228);			// open PA
+	//delay_us(4);				// allow to stabalize - 250usec if synthesizer is off
+	//WriteCMD(0x8238);
+}
+016D  0008  	RETURN
+
+
+/*
+	Receiving state
+ */
+void goto_receiving_state(void)
+
+{
+	rfm12_conf.state = RFM12_STATE_RECEIVING;
+016E  3003  	MOVLW 0x03
+016F  1283  	BCF STATUS, RP0
+0170  1303  	BCF STATUS, RP1
+0171  00A0  	MOVWF gbl_rfm12_conf
+
+	
+	//RFM12 - Power Management Command
+	//er : Enable receiver chain = 1 
+	//ebb : Enable baseband = 0
+	//et : Enable PLL,PA, TX = 0
+	//es : Enable synthesizer = 0
+	//ex : Enable crystal oscillator = 0
+	//eb : Enable low battery detector = 0
+	//ew : Enable wake-up timer = 0
+	//dc : Disable clock output = 0
+	WriteCMD(RFM12_CMD_PWRMGT | RFM12_PWRMGT_ER );
+0172  3080  	MOVLW 0x80
+0173  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0174  3082  	MOVLW 0x82
+0175  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0176  2024  	CALL WriteCMD_00000
+
+	//WriteCMD(0x82DC);
+	//delay_us(150);			// allow to stabalize - 250usec if synthesizer is off
+}
+0177  0008  	RETURN
+
+
+/*
+	quiet time state
+ */
+void goto_quiettime_state(void)
+
+{
+ 	rfm12_conf.state = RFM12_STATE_QUIETTIME;
+006F  3004  	MOVLW 0x04
+0070  1283  	BCF STATUS, RP0
+0071  1303  	BCF STATUS, RP1
+0072  00A0  	MOVWF gbl_rfm12_conf
+
+ 	//RFM12 - Power Management Command
+	//er : Enable receiver chain = 0
+	//ebb : Enable baseband = 0
+	//et : Enable PLL,PA, TX = 0
+	//es : Enable synthesizer = 0
+	//ex : Enable crystal oscillator = 1
+	//eb : Enable low battery detector = 0
+	//ew : Enable wake-up timer = 0
+	//dc : Disable clock output = 0
+ 	WriteCMD(RFM12_CMD_PWRMGT | RFM12_PWRMGT_EX );
+0073  3008  	MOVLW 0x08
+0074  00FB  	MOVWF WriteCMD_00000_arg_CMD
+0075  3082  	MOVLW 0x82
+0076  00FC  	MOVWF WriteCMD_00000_arg_CMD+D'1'
+0077  2024  	CALL WriteCMD_00000
+
+ 	//WriteCMD(0x821C);
+}
+0078  0008  	RETURN
+
+
+/*
+	powering transmitter state
+ */
+void goto_poweringtransmitter_state(void)
+{
+ 	rfm12_conf.state = RFM12_STATE_POWERINGTRANSMITTER;
+ 	//RFM12 - Power Management Command
+	//er : Enable receiver chain = 0
+	//ebb : Enable baseband = 0
+	//et : Enable PLL,PA, TX = 0
+	//es : Enable synthesizer = 0
+	//ex : Enable crystal oscillator = 1
+	//eb : Enable low battery detector = 0
+	//ew : Enable wake-up timer = 0
+	//dc : Disable clock output = 0
+ 	WriteCMD(RFM12_CMD_PWRMGT | RFM12_PWRMGT_EX );
+ 	//WriteCMD(0x821C);
+}
+	
+	
+////////////////////////////////////////
+// Code with no source :-)
+////////////////////////////////////////
+0000  2A7E  	GOTO	_startup
+
+0004  00FF  	MOVWF Int1Context
+0005  0E03  	SWAPF STATUS, W
+0006  1283  	BCF STATUS, RP0
+0007  1303  	BCF STATUS, RP1
+0008  00C6  	MOVWF Int1BContext
+0009  0E0A  	SWAPF PCLATH, W
+000A  00C7  	MOVWF Int1BContext+D'1'
+000B  0E04  	SWAPF FSR, W
+000C  00C8  	MOVWF Int1BContext+D'2'
+000D  118A  	BCF PCLATH,3
+000E  120A  	BCF PCLATH,4
+000F  2A85  	GOTO	interrupt
+0010        delay_ms_00000
+0010        ; { delay_ms ; function begin
+0010  08F1  	MOVF delay_ms_00000_arg_del, F
+0011  1D03  	BTFSS STATUS,Z
+0012  2814  	GOTO	label1
+0013  0008  	RETURN
+0014        label1
+0014  30F9  	MOVLW 0xF9
+0015        label2
+0015  0000  	NOP
+0016  0000  	NOP
+0017  0000  	NOP
+0018  0000  	NOP
+0019  3EFF  	ADDLW 0xFF
+001A  1D03  	BTFSS STATUS,Z
+001B  2815  	GOTO	label2
+001C  0000  	NOP
+001D  0000  	NOP
+001E  0000  	NOP
+001F  0000  	NOP
+0020  0000  	NOP
+0021  0BF1  	DECFSZ delay_ms_00000_arg_del, F
+0022  2814  	GOTO	label1
+0023  0008  	RETURN
+0024        ; } delay_ms function end
+
+
+0079        __div_32_3_00001
+0079        ; { __div_32_32 ; function begin
+0079  1683  	BSF STATUS, RP0
+007A  1303  	BCF STATUS, RP1
+007B  01A0  	CLRF __div_32_3_00001_1_r
+007C  01A1  	CLRF __div_32_3_00001_1_r+D'1'
+007D  01A2  	CLRF __div_32_3_00001_1_r+D'2'
+007E  01A3  	CLRF __div_32_3_00001_1_r+D'3'
+007F  01A5  	CLRF CompTempVarRet163
+0080  01A6  	CLRF CompTempVarRet163+D'1'
+0081  01A7  	CLRF CompTempVarRet163+D'2'
+0082  01A8  	CLRF CompTempVarRet163+D'3'
+0083  01A4  	CLRF __div_32_3_00001_1_i
+0084        label7
+0084  1AA4  	BTFSC __div_32_3_00001_1_i,5
+0085  0008  	RETURN
+0086  1003  	BCF STATUS,C
+0087  0DA5  	RLF CompTempVarRet163, F
+0088  0DA6  	RLF CompTempVarRet163+D'1', F
+0089  0DA7  	RLF CompTempVarRet163+D'2', F
+008A  0DA8  	RLF CompTempVarRet163+D'3', F
+008B  0DF3  	RLF __div_32_3_00001_arg_a, F
+008C  0DF4  	RLF __div_32_3_00001_arg_a+D'1', F
+008D  0DF5  	RLF __div_32_3_00001_arg_a+D'2', F
+008E  0DF6  	RLF __div_32_3_00001_arg_a+D'3', F
+008F  0DA0  	RLF __div_32_3_00001_1_r, F
+0090  0DA1  	RLF __div_32_3_00001_1_r+D'1', F
+0091  0DA2  	RLF __div_32_3_00001_1_r+D'2', F
+0092  0DA3  	RLF __div_32_3_00001_1_r+D'3', F
+0093  087A  	MOVF __div_32_3_00001_arg_b+D'3', W
+0094  0223  	SUBWF __div_32_3_00001_1_r+D'3', W
+0095  1D03  	BTFSS STATUS,Z
+0096  28A1  	GOTO	label8
+0097  0879  	MOVF __div_32_3_00001_arg_b+D'2', W
+0098  0222  	SUBWF __div_32_3_00001_1_r+D'2', W
+0099  1D03  	BTFSS STATUS,Z
+009A  28A1  	GOTO	label8
+009B  0878  	MOVF __div_32_3_00001_arg_b+D'1', W
+009C  0221  	SUBWF __div_32_3_00001_1_r+D'1', W
+009D  1D03  	BTFSS STATUS,Z
+009E  28A1  	GOTO	label8
+009F  0877  	MOVF __div_32_3_00001_arg_b, W
+00A0  0220  	SUBWF __div_32_3_00001_1_r, W
+00A1        label8
+00A1  1C03  	BTFSS STATUS,C
+00A2  28B2  	GOTO	label9
+00A3  0877  	MOVF __div_32_3_00001_arg_b, W
+00A4  02A0  	SUBWF __div_32_3_00001_1_r, F
+00A5  0878  	MOVF __div_32_3_00001_arg_b+D'1', W
+00A6  1C03  	BTFSS STATUS,C
+00A7  0F78  	INCFSZ __div_32_3_00001_arg_b+D'1', W
+00A8  02A1  	SUBWF __div_32_3_00001_1_r+D'1', F
+00A9  0879  	MOVF __div_32_3_00001_arg_b+D'2', W
+00AA  1C03  	BTFSS STATUS,C
+00AB  0F79  	INCFSZ __div_32_3_00001_arg_b+D'2', W
+00AC  02A2  	SUBWF __div_32_3_00001_1_r+D'2', F
+00AD  087A  	MOVF __div_32_3_00001_arg_b+D'3', W
+00AE  1C03  	BTFSS STATUS,C
+00AF  0F7A  	INCFSZ __div_32_3_00001_arg_b+D'3', W
+00B0  02A3  	SUBWF __div_32_3_00001_1_r+D'3', F
+00B1  1425  	BSF CompTempVarRet163,0
+00B2        label9
+00B2  0AA4  	INCF __div_32_3_00001_1_i, F
+00B3  2884  	GOTO	label7
+00B4        ; } __div_32_32 function end
+
+00B4        __div_16_1_00003
+00B4        ; { __div_16_16 ; function begin
+00B4  01FD  	CLRF __div_16_1_00003_1_r
+00B5  01FE  	CLRF __div_16_1_00003_1_r+D'1'
+00B6  1683  	BSF STATUS, RP0
+00B7  1303  	BCF STATUS, RP1
+00B8  01A1  	CLRF CompTempVarRet167
+00B9  01A2  	CLRF CompTempVarRet167+D'1'
+00BA  01A0  	CLRF __div_16_1_00003_1_i
+00BB        label10
+00BB  1A20  	BTFSC __div_16_1_00003_1_i,4
+00BC  0008  	RETURN
+00BD  1003  	BCF STATUS,C
+00BE  0DA1  	RLF CompTempVarRet167, F
+00BF  0DA2  	RLF CompTempVarRet167+D'1', F
+00C0  0DF3  	RLF __div_16_1_00003_arg_a, F
+00C1  0DF4  	RLF __div_16_1_00003_arg_a+D'1', F
+00C2  0DFD  	RLF __div_16_1_00003_1_r, F
+00C3  0DFE  	RLF __div_16_1_00003_1_r+D'1', F
+00C4  0876  	MOVF __div_16_1_00003_arg_b+D'1', W
+00C5  027E  	SUBWF __div_16_1_00003_1_r+D'1', W
+00C6  1D03  	BTFSS STATUS,Z
+00C7  28CA  	GOTO	label11
+00C8  0875  	MOVF __div_16_1_00003_arg_b, W
+00C9  027D  	SUBWF __div_16_1_00003_1_r, W
+00CA        label11
+00CA  1C03  	BTFSS STATUS,C
+00CB  28D3  	GOTO	label12
+00CC  0875  	MOVF __div_16_1_00003_arg_b, W
+00CD  02FD  	SUBWF __div_16_1_00003_1_r, F
+00CE  0876  	MOVF __div_16_1_00003_arg_b+D'1', W
+00CF  1C03  	BTFSS STATUS,C
+00D0  03FE  	DECF __div_16_1_00003_1_r+D'1', F
+00D1  02FE  	SUBWF __div_16_1_00003_1_r+D'1', F
+00D2  1421  	BSF CompTempVarRet167,0
+00D3        label12
+00D3  0AA0  	INCF __div_16_1_00003_1_i, F
+00D4  28BB  	GOTO	label10
+00D5        ; } __div_16_16 function end
+
+
+027E        _startup
+
+0282  118A  	BCF PCLATH,3
+0283  120A  	BCF PCLATH,4
+0284  29B4  	GOTO	main
+
+2007  3F10  	DW 0x3F10

@@ -1,0 +1,265 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.4	//
+ADEN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	118;"	d
+BRGH	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	164;"	d
+C	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	67;"	d
+C1INV	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	127;"	d
+C1OUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	125;"	d
+C2INV	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	126;"	d
+C2OUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	124;"	d
+CCP1CON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	40;"	d
+CCP1IE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	148;"	d
+CCP1IF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	84;"	d
+CCP1M0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	111;"	d
+CCP1M1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	110;"	d
+CCP1M2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	109;"	d
+CCP1M3	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	108;"	d
+CCP1X	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	106;"	d
+CCP1Y	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	107;"	d
+CCPR1H	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	39;"	d
+CCPR1L	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	38;"	d
+CIS	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	128;"	d
+CM0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	131;"	d
+CM1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	130;"	d
+CM2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	129;"	d
+CMCON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	44;"	d
+CMIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	145;"	d
+CMIF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	81;"	d
+COMMON_H	F:\RFM12\common.h	19;"	d
+CONF_LED1_OUT	F:\RFM12\common.h	42;"	d
+CONF_TRIG_IN	F:\RFM12\common.h	44;"	d
+CONF_TRIG_OUT	F:\RFM12\common.h	43;"	d
+CREN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	117;"	d
+CSRC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	160;"	d
+DC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	66;"	d
+EEADR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	54;"	d
+EECON1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	55;"	d
+EECON2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	56;"	d
+EEDATA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	53;"	d
+EEIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	144;"	d
+EEIF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	80;"	d
+F	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	20;"	d
+FERR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	119;"	d
+FSR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	27;"	d
+GIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	70;"	d
+HI_SCK	F:\RFM12\tx.c	53;"	d	file:
+HI_SDO	F:\RFM12\tx.c	55;"	d	file:
+HI_SEL	F:\RFM12\tx.c	57;"	d	file:
+INDF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	23;"	d
+INTCON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	31;"	d
+INTE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	73;"	d
+INTEDG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	135;"	d
+INTF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	76;"	d
+IRP	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	60;"	d
+LED1	F:\RFM12\common.h	33;"	v
+LED1_TRIS	F:\RFM12\common.h	38;"	v
+LOW_SCK	F:\RFM12\tx.c	54;"	d	file:
+LOW_SDO	F:\RFM12\tx.c	56;"	d	file:
+LOW_SEL	F:\RFM12\tx.c	58;"	d	file:
+NOT_BO	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	155;"	d
+NOT_BOD	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	157;"	d
+NOT_BOR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	156;"	d
+NOT_PD	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	64;"	d
+NOT_POR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	154;"	d
+NOT_RBPU	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	134;"	d
+NOT_T1SYNC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	92;"	d
+NOT_TO	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	63;"	d
+OERR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	120;"	d
+OPTION_REG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	45;"	d
+OSCF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	153;"	d
+PCL	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	25;"	d
+PCLATH	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	30;"	d
+PCON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	49;"	d
+PEIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	71;"	d
+PIE1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	48;"	d
+PIR1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	32;"	d
+PKT_GM_TRIG	F:\RFM12\common.h	29;"	d
+PKT_PREAMBLE	F:\RFM12\common.h	26;"	d
+PKT_SYNC_HI	F:\RFM12\common.h	27;"	d
+PKT_SYNC_LO	F:\RFM12\common.h	28;"	d
+PORTA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	28;"	d
+PORTB	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	29;"	d
+PR2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	50;"	d
+PS0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	141;"	d
+PS1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	140;"	d
+PS2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	139;"	d
+PSA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	138;"	d
+RBIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	74;"	d
+RBIF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	77;"	d
+RCIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	146;"	d
+RCIF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	82;"	d
+RCREG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	43;"	d
+RCSTA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	41;"	d
+RD	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	172;"	d
+RFM12_CS_OUT	F:\RFM12\tx.c	45;"	d	file:
+RFM12_CS_PIN	F:\RFM12\tx.c	24;"	d	file:
+RFM12_CS_PIN	F:\RFM12\tx.c	33;"	v
+RFM12_CS_PIN	F:\RFM12\tx.c	39;"	v
+RFM12_CS_PORT	F:\RFM12\tx.c	10;"	d	file:
+RFM12_CS_TRISP	F:\RFM12\tx.c	17;"	d	file:
+RFM12_nIRQ_IN	F:\RFM12\tx.c	50;"	d	file:
+RFM12_nIRQ_PIN	F:\RFM12\tx.c	23;"	d	file:
+RFM12_nIRQ_PIN	F:\RFM12\tx.c	32;"	v
+RFM12_nIRQ_PIN	F:\RFM12\tx.c	38;"	v
+RFM12_nIRQ_PORT	F:\RFM12\tx.c	9;"	d	file:
+RFM12_nIRQ_TRISP	F:\RFM12\tx.c	16;"	d	file:
+RP0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	62;"	d
+RP1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	61;"	d
+RX9	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	115;"	d
+RX9D	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	121;"	d
+SCK_OUT	F:\RFM12\tx.c	46;"	d	file:
+SCK_PIN	F:\RFM12\tx.c	25;"	d	file:
+SCK_PIN	F:\RFM12\tx.c	34;"	v
+SCK_PIN	F:\RFM12\tx.c	40;"	v
+SCK_PORT	F:\RFM12\tx.c	11;"	d	file:
+SCK_TRISP	F:\RFM12\tx.c	18;"	d	file:
+SDI_IN	F:\RFM12\tx.c	51;"	d	file:
+SDI_PIN	F:\RFM12\tx.c	27;"	d	file:
+SDI_PIN	F:\RFM12\tx.c	36;"	v
+SDI_PIN	F:\RFM12\tx.c	42;"	v
+SDI_PORT	F:\RFM12\tx.c	13;"	d	file:
+SDI_TRISP	F:\RFM12\tx.c	20;"	d	file:
+SDO_OUT	F:\RFM12\tx.c	47;"	d	file:
+SDO_PIN	F:\RFM12\tx.c	26;"	d	file:
+SDO_PIN	F:\RFM12\tx.c	35;"	v
+SDO_PIN	F:\RFM12\tx.c	41;"	v
+SDO_PORT	F:\RFM12\tx.c	12;"	d	file:
+SDO_TRISP	F:\RFM12\tx.c	19;"	d	file:
+SPBRG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	52;"	d
+SPEN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	114;"	d
+SREN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	116;"	d
+STATUS	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	26;"	d
+SYNC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	163;"	d
+T0CS	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	136;"	d
+T0IE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	72;"	d
+T0IF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	75;"	d
+T0SE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	137;"	d
+T1CKPS0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	90;"	d
+T1CKPS1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	89;"	d
+T1CON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	35;"	d
+T1OSCEN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	91;"	d
+T2CKPS0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	103;"	d
+T2CKPS1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	102;"	d
+T2CON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	37;"	d
+TMR0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	24;"	d
+TMR1CS	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	93;"	d
+TMR1H	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	34;"	d
+TMR1IE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	150;"	d
+TMR1IF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	86;"	d
+TMR1L	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	33;"	d
+TMR1ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	94;"	d
+TMR2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	36;"	d
+TMR2IE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	149;"	d
+TMR2IF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	85;"	d
+TMR2ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	101;"	d
+TOUTPS0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	100;"	d
+TOUTPS1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	99;"	d
+TOUTPS2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	98;"	d
+TOUTPS3	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	97;"	d
+TRIG_CMD	F:\RFM12\common.h	52;"	d
+TRIG_IN	F:\RFM12\common.h	34;"	v
+TRIG_IN_TRIS	F:\RFM12\common.h	39;"	v
+TRIG_OUT	F:\RFM12\common.h	35;"	v
+TRIG_OUT_TRIS	F:\RFM12\common.h	40;"	v
+TRISA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	46;"	d
+TRISB	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	47;"	d
+TRMT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	165;"	d
+TX9	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	161;"	d
+TX9D	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	166;"	d
+TXEN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	162;"	d
+TXIE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	147;"	d
+TXIF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	83;"	d
+TXREG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	42;"	d
+TXSTA	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	51;"	d
+VR0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	181;"	d
+VR1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	180;"	d
+VR2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	179;"	d
+VR3	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	178;"	d
+VRCON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	57;"	d
+VREN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	175;"	d
+VROE	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	176;"	d
+VRR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	177;"	d
+W	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	19;"	d
+WR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	171;"	d
+WREN	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	170;"	d
+WRERR	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	169;"	d
+WaitReady	F:\RFM12\tx.c	280;"	f
+Write0	F:\RFM12\tx.c	200;"	f
+Write1	F:\RFM12\tx.c	175;"	f
+WriteCMD	F:\RFM12\tx.c	235;"	f
+Z	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	65;"	d
+_BODEN_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	190;"	d
+_BODEN_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	189;"	d
+_BOREN_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	192;"	d
+_BOREN_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	191;"	d
+_CONFIG	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	221;"	d
+_CP_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	194;"	d
+_CP_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	193;"	d
+_DATA_CP_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	196;"	d
+_DATA_CP_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	195;"	d
+_EEPROM	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	228;"	d
+_ER_OSC_CLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	207;"	d
+_ER_OSC_NOCLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	208;"	d
+_EXTCLK_OSC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	213;"	d
+_HS_OSC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	214;"	d
+_INTOSC_OSC_CLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	209;"	d
+_INTOSC_OSC_NOCLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	210;"	d
+_INTRC_OSC_CLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	211;"	d
+_INTRC_OSC_NOCLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	212;"	d
+_LP_OSC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	216;"	d
+_LVP_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	202;"	d
+_LVP_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	201;"	d
+_MCLRE_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	204;"	d
+_MCLRE_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	203;"	d
+_PIC16F628A_H_	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	11;"	d
+_PWRTE_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	197;"	d
+_PWRTE_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	198;"	d
+_RC_OSC_CLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	205;"	d
+_RC_OSC_NOCLKOUT	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	206;"	d
+_WDT_OFF	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	200;"	d
+_WDT_ON	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	199;"	d
+_XT_OSC	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	215;"	d
+ccp1con	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	247;"	v
+ccpr1h	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	246;"	v
+ccpr1l	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	245;"	v
+cmcon	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	251;"	v
+disable_interrupts	F:\RFM12\common.h	46;"	d
+eeadr	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	261;"	v
+eecon1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	262;"	v
+eecon2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	263;"	v
+eedata	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	260;"	v
+enable_interrupts	F:\RFM12\common.h	47;"	d
+fsr	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	234;"	v
+indf	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	230;"	v
+init	F:\RFM12\tx.c	133;"	f
+intcon	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	238;"	v
+main	F:\RFM12\tx.c	66;"	f
+option_reg	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	252;"	v
+pcl	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	232;"	v
+pclath	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	237;"	v
+pcon	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	256;"	v
+pie1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	255;"	v
+pir1	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	239;"	v
+porta	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	235;"	v
+portb	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	236;"	v
+pr2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	257;"	v
+rcreg	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	250;"	v
+rcsta	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	248;"	v
+rf_SendByte	F:\RFM12\tx.c	265;"	f
+spbrg	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	259;"	v
+status	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	233;"	v
+t1con	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	242;"	v
+t2con	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	244;"	v
+tmr0	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	231;"	v
+tmr1h	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	241;"	v
+tmr1l	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	240;"	v
+tmr2	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	243;"	v
+trisa	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	253;"	v
+trisb	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	254;"	v
+txreg	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	249;"	v
+txsta	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	258;"	v
+vrcon	C:\Arquivos de programas\SourceBoost\Include\pic16F628A.h	264;"	v

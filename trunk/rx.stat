@@ -1,0 +1,14 @@
+// SourceBoost Linker Function Resource Usage Dump
+
+#GLOBAL:"global",line = 0,ram = 2.0,rom = 0;
+init(void):"F:\RFM12\rx.c",line = 132,ram = 0.0,rom = 83;
+WriteCMD(unsigned short):"F:\RFM12\rx.c",line = 246,ram = 8.0,rom = 33;
+Write1(void):"F:\RFM12\rx.c",line = 185,ram = 0.0,rom = 23;
+Write0(void):"F:\RFM12\rx.c",line = 210,ram = 0.0,rom = 23;
+WaitReady(void):"F:\RFM12\rx.c",line = 291,ram = 4.1,rom = 18;
+ReadFifo(void):"F:\RFM12\rx.c",line = 311,ram = 1.0,rom = 8;
+main(void):"F:\RFM12\rx.c",line = 69,ram = 22.0,rom = 142;
+delay_ms(unsigned char):"NoSourceFile",line = 0,ram = 0.0,rom = 20;
+_startup(void):"NoSourceFile",line = 0,ram = 0.0,rom = 7;
+#HEAP_BLOCK: 0, 160, 96;
+#HEAP_BLOCK: 1, 64, 48;
